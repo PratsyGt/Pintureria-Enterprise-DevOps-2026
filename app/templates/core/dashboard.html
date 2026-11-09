@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static l10n %}
 {% block title %}Resumen comercial · Pinturería Enterprise{% endblock %}
-{% block dashboard_assets %}<script defer src="{% static 'js/dashboard.js' %}?v=motion2"></script>
+{% block dashboard_assets %}<script defer src="{% static 'js/dashboard.js' %}?v=rail1"></script>
 <script defer src="{% static 'js/dashboard-motion.js' %}?v=motion2"></script>
 <noscript><style>.executive [data-pane][hidden]{display:block!important}.executive .switches{display:none}.executive [data-pane]+[data-pane]{margin-top:1rem}</style></noscript>{% endblock %}
 {% block content %}
@@ -12,11 +12,11 @@
       <h1>Hola, {{ usuario_sesion.nombre }}.</h1>
       <p>{% if dashboard.financial %}Tu ticket promedio en este período es <strong>Q {{ dashboard.ticket|floatformat:"2u" }}</strong>.{% elif dashboard.kpis %}Consulta los pendientes de tu operación.{% else %}Accede a tus módulos desde el menú.{% endif %}</p>
     </div>
-    <img class="swatch-art" src="{% static 'img/swatch-deck.svg' %}" alt="" width="180" height="112"><div class="shortcuts">
-      {% if permisos.cotizaciones.editar %}<a href="{% url 'cotizacion_nueva' %}">{% include 'components/icon.html' with name='file' %}Cotizar</a>{% endif %}
-      {% if permisos.compras.editar %}<a href="{% url 'compra_nueva' %}">{% include 'components/icon.html' with name='truck' %}Comprar</a>{% endif %}
-      {% if permisos.inventario.ver %}<a href="{% url 'inventario' %}">{% include 'components/icon.html' with name='layers' %}Inventario</a>{% endif %}
-      {% if permisos.reportes.ver %}<a href="{% url 'reportes' %}">{% include 'components/icon.html' with name='chart' %}Reportes</a>{% endif %}
+    <div class="shortcuts">
+      {% if permisos.cotizaciones.editar %}<a href="{% url 'cotizacion_nueva' %}"><img src="{% static 'img/accion-cotizar.svg' %}" width="100" height="76" alt=""><span>Cotizar</span></a>{% endif %}
+      {% if permisos.compras.editar %}<a href="{% url 'compra_nueva' %}"><img src="{% static 'img/accion-comprar.svg' %}" width="100" height="76" alt=""><span>Comprar</span></a>{% endif %}
+      {% if permisos.inventario.ver %}<a href="{% url 'inventario' %}"><img src="{% static 'img/accion-inventario.svg' %}" width="100" height="76" alt=""><span>Inventario</span></a>{% endif %}
+      {% if permisos.reportes.ver %}<a href="{% url 'reportes' %}"><img src="{% static 'img/accion-reportes.svg' %}" width="100" height="76" alt=""><span>Reportes</span></a>{% endif %}
     </div>
   </header>
 

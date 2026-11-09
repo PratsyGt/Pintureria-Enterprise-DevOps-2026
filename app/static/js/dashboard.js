@@ -16,8 +16,7 @@
 
   for (const eventName of ['pointerover', 'focusin']) {
     document.addEventListener(eventName, event => {
-      const target = event.target.closest('[data-tip]') ||
-        (matchMedia('(min-width:1024px)').matches && event.target.closest('.sidebar-compact .sidebar .nav-link'));
+      const target = event.target.closest('[data-tip]');
       if (target) showTip(target);
     });
   }
