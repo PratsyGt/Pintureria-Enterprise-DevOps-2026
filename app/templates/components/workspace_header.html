@@ -6,7 +6,7 @@
       <a href="{% url 'dashboard' %}" {% if request.path == '/' %}aria-current="page"{% endif %}>Resumen</a>
       {% for group in navigation %}{% if group.title == 'Operaciones' or group.title == 'Administración' or group.title == 'Inventario' %}
         <details class="workspace-menu"><summary>{{ group.title }} <span aria-hidden="true">⌄</span></summary>
-          <div class="workspace-flyout">{% for item in group.links %}<a href="{{ item.url }}" {% if item.active %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name=item.icon %}{{ item.label }}</a>{% endfor %}</div>
+          <div class="workspace-flyout">{% for item in group.links %}<a style="--item-order:{{ forloop.counter0 }}" href="{{ item.url }}" {% if item.active %}aria-current="page"{% endif %}>{% include 'components/icon.html' with name=item.icon %}{{ item.label }}</a>{% endfor %}</div>
         </details>
       {% endif %}{% endfor %}
     </nav>
@@ -16,7 +16,7 @@
     <button class="context-search icon-btn" type="button" aria-label="Buscar en esta pantalla" title="Buscar (Alt+B)">{% include 'components/icon.html' with name='search' %}<span>Buscar</span><kbd>Alt B</kbd></button>
     {% if permisos.facturas.editar %}<a class="btn primary header-sale" href="{% url 'factura_nueva' %}">{% include 'components/icon.html' with name='plus' %} Nueva venta</a>{% endif %}
     <details class="profile-menu"><summary><span class="avatar">{{ usuario_sesion.nombre|first|upper }}</span><span class="user-copy"><strong>{{ usuario_sesion.nombre }}</strong><small>{{ usuario_sesion.rol }}</small></span></summary>
-      <div class="profile-popover"><a href="{% url 'perfil' %}">Mi perfil</a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Cerrar sesión</button></form></div>
+      <div class="profile-popover"><a href="{% url 'perfil' %}">Mi perfil</a><form style="--item-order:1" method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit">Cerrar sesión</button></form></div>
     </details>
   </div>
 </header>

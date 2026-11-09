@@ -91,7 +91,7 @@ function enhance(root){
  });
 }
 enhance(document);
-if (!$('.executive')) $('.page-content')?.classList.add('page-enter');
+if (!sidebar) $('.page-content')?.classList.add('page-enter');
 new MutationObserver(records=>records.forEach(r=>r.addedNodes.forEach(n=>{if(n.nodeType!==1)return;if(n.matches('select'))searchable(n);$$('select',n).forEach(searchable);}))).observe($('main'),{childList:true,subtree:true});
 $('.password-toggle')?.addEventListener('click',event=>{const input=$('#id_clave'),shown=input.type==='password';input.type=shown?'text':'password';event.currentTarget.textContent=shown?'Ocultar contraseña':'Mostrar contraseña';event.currentTarget.setAttribute('aria-pressed',String(shown));});
 // Preserve existing data while GET filters load. Skeletons reflect real requests only.

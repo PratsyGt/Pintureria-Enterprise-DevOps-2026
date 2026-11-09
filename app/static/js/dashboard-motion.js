@@ -87,9 +87,6 @@
     counters(root, initial, animate);
     if (!animate) return;
     if (initial) {
-      document.body.classList.add('shell-intro');
-      document.querySelectorAll('.sidebar .nav-link').forEach((link, index) =>
-        link.style.setProperty('--nav-index', Math.min(index, 8)));
       root.classList.add('dashboard-intro');
     } else {
       root.classList.add('dashboard-refresh');

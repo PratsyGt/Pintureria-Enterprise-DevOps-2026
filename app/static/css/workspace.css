@@ -91,8 +91,15 @@
 @media (prefers-reduced-motion:no-preference) {
   #rail-label:not([hidden]), .workspace-menu[open] .workspace-flyout, .profile-menu[open] .profile-popover { animation: fly-in 160ms ease-out; }
   @keyframes fly-in { from { opacity: 0; translate: -4px 0; } }
-  .app-body .page-enter { animation: module-in 300ms cubic-bezier(.18,.68,.22,1) backwards; }
-  @keyframes module-in { from { opacity: .2; transform: translateY(7px); filter: blur(2px); } }
+  .module-stage {
+    animation:metric-rise calc(480ms * var(--motion-speed)) var(--stage-ease)
+      calc((var(--kpi-start-ms) + var(--stage-index) * var(--kpi-step-ms)) * 1ms * var(--motion-speed)) backwards;
+  }
+  .workspace-menu[open] .workspace-flyout a, .profile-menu[open] .profile-popover > * {
+    animation:panel-rise 240ms var(--stage-ease) backwards;
+    animation-delay:calc(var(--item-order, 0) * 30ms);
+  }
+
 }
 @media print {
   .app-body, .app-shell { padding: 0; margin: 0; background: white; }
@@ -100,8 +107,8 @@
   .app-body .panel, .app-body .sheet, .app-body .table-wrap { box-shadow: none; }
 }
 @property --reveal-radius { syntax:"<length>"; inherits:false; initial-value:0px; }
-@media screen and (min-width:1024px) and (prefers-reduced-motion:no-preference) {
-  .app-body.first-workspace-entry::after {
+@media screen and (prefers-reduced-motion:no-preference) {
+  .app-body.workspace-entry::after {
     content:""; position:fixed; inset:0; z-index:100; pointer-events:none;
     background:#17152b;
     mask-image:radial-gradient(circle at 9% 12%,transparent var(--reveal-radius),black calc(var(--reveal-radius) + 2px));

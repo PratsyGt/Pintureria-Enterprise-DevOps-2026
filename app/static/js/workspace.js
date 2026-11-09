@@ -2,13 +2,47 @@
 (() => {
   const sidebar = document.querySelector('#sidebar');
   if (!sidebar) return;
-  try {
-    if (document.querySelector('.executive') && !sessionStorage.getItem('pos.workspace.entered')) {
-      sessionStorage.setItem('pos.workspace.entered', '1');
-      document.body.classList.add('first-workspace-entry');
-      setTimeout(() => document.body.classList.remove('first-workspace-entry'), 550);
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  const content = document.querySelector('.page-content');
+  let cleanupTimer;
+  let animated = [];
+
+  function finishEntry() {
+    clearTimeout(cleanupTimer);
+    document.body.classList.remove('workspace-entry', 'shell-intro');
+    for (const element of animated) {
+      element.classList.remove('module-stage');
+      element.style.removeProperty('--stage-index');
     }
-  } catch {}
+    animated = [];
+  }
+
+  function playEntry() {
+    finishEntry();
+    if (reduced.matches || document.hidden) return;
+    sidebar.querySelectorAll('.nav-link').forEach((link, index) =>
+      link.style.setProperty('--nav-index', Math.min(index, 8)));
+    if (!content.querySelector('.executive')) {
+      // Stage existing blocks. The POS catalog and cart are independent regions.
+      const blocks = [...content.children].filter(el =>
+        !el.matches('script,style,dialog,noscript,[hidden]') && el.getClientRects().length);
+      for (const block of blocks) {
+        const regions = block.matches('[data-pos-form]') ? block.querySelectorAll('.pos-layout > *') : [block];
+        animated.push(...regions);
+      }
+      animated.forEach((element, index) => {
+        element.style.setProperty('--stage-index', Math.min(index, 6));
+        element.classList.add('module-stage');
+      });
+    }
+    document.body.classList.add('workspace-entry', 'shell-intro');
+    cleanupTimer = setTimeout(finishEntry, 1800);
+  }
+
+  playEntry();
+  window.addEventListener('pagehide', finishEntry);
+  window.addEventListener('pageshow', event => { if (event.persisted) playEntry(); });
+  reduced.addEventListener('change', () => { if (reduced.matches) finishEntry(); });
   const label = document.querySelector('#rail-label');
   const compact = () => innerWidth >= 1024 && document.documentElement.classList.contains('sidebar-compact');
   function show(link) {
