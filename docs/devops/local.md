@@ -32,7 +32,7 @@ En Linux usa `python3` y `curl` para los mismos pasos. Para detener el entorno c
 
 El servicio init espera a que SQL responda y toma un bloqueo de sesión en master. Solo instala PintureriaDB cuando no existe. Aplica 01, 04, 05, 06 y 07 en ese orden sobre una única conexión, separando los lotes GO. Los scripts 02 (demo), 03 (diagnóstico) y 08 (pruebas) quedan fuera del arranque. Al final crea el login SQL pos_app y una marca de instalación. Un reinicio con marca devuelve éxito sin repetir los scripts. Una base preexistente sin marca o una instalación parcial exige diagnóstico del lote y recuperación desde respaldo o un volumen nuevo. No añadas la marca a mano.
 
-La web puede leer el esquema dbo, ejecutar los procedimientos de la aplicación y escribir directamente solo los mantenimientos, permisos y auditoría que el código utiliza. SA permanece en SQL e init. La clave de Django debe mantenerse estable entre releases y réplicas para conservar las sesiones. Para rotar una contraseña SQL, actualiza primero el login de la base y luego los secretos de los consumidores. Cambiar únicamente el archivo env no actualiza cuentas persistidas.
+La web puede leer las tablas y vistas enumeradas en ops/bootstrap.py, ejecutar los procedimientos utilizados por Django y escribir directamente solo los mantenimientos, permisos y auditoría que el código utiliza. SA permanece en SQL e init. La clave de Django debe mantenerse estable entre releases y réplicas para conservar las sesiones. Para rotar una contraseña SQL, actualiza primero el login de la base y luego los secretos de los consumidores. Cambiar únicamente el archivo env no actualiza cuentas persistidas.
 
 ## Misma imagen para los integrantes
 
