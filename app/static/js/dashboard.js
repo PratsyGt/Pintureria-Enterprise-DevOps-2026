@@ -7,7 +7,7 @@
 
   function showTip(element) {
     const bounds = element.getBoundingClientRect();
-    tooltip.textContent = element.dataset.tip;
+    tooltip.textContent = element.dataset.tip || element.getAttribute('aria-label');
     tooltip.hidden = false;
     const x = bounds.left + bounds.width / 2 - tooltip.offsetWidth / 2;
     tooltip.style.left = Math.max(8, Math.min(x, innerWidth - tooltip.offsetWidth - 8)) + 'px';
@@ -16,7 +16,8 @@
 
   for (const eventName of ['pointerover', 'focusin']) {
     document.addEventListener(eventName, event => {
-      const target = event.target.closest('[data-tip]');
+      const target = event.target.closest('[data-tip]') ||
+        (matchMedia('(min-width:1024px)').matches && event.target.closest('.sidebar-compact .sidebar .nav-link'));
       if (target) showTip(target);
     });
   }
@@ -28,13 +29,14 @@
   document.addEventListener('click', event => {
     const choice = event.target.closest('button[data-view]');
     if (!choice) return;
+    if (choice.getAttribute('aria-pressed') === 'true') return;
     const panel = choice.closest('[data-switcher]');
     for (const button of panel.querySelectorAll('[data-view]')) {
       button.setAttribute('aria-pressed', String(button === choice));
     }
     for (const pane of panel.querySelectorAll('[data-pane]')) {
       pane.hidden = pane.dataset.pane !== choice.dataset.view;
-      if (!pane.hidden) window.Enterprise.pulse(pane);
+      if (!pane.hidden) pane.classList.add('chart-reveal');
     }
   });
 })();

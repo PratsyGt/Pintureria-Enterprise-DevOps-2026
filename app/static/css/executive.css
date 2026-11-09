@@ -148,8 +148,5 @@
   .donut { width: 112px; }
   .pay-layout { grid-template-columns: 112px 1fr; gap: 10px; }
 }
-@media (prefers-reduced-motion:no-preference) {
-  .plot svg, .ring-piece, .rank em { animation: fade-in 220ms ease-out; }
-}
 @media print { .graph-tooltip,.shortcuts,.period-picker,.switches { display: none; } }
 

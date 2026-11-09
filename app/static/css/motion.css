@@ -2,3 +2,67 @@
 .btn,.button,.icon-btn,.nav-link,.product-card,input,select,textarea,.badge,.status{transition:background-color var(--fast) ease,border-color var(--fast) ease,color var(--fast) ease,box-shadow var(--fast) ease,opacity var(--fast) ease,transform var(--fast) var(--ease)}.btn:active,.product-card:active{transform:scale(.985)}.btn.primary:hover{box-shadow:0 4px 12px #254ecb1a}.product-card:hover{transform:translateY(-2px)}.nav-link.is-active:before{animation:active-in 180ms var(--ease) both}.sidebar{transition:transform var(--normal) var(--ease),visibility var(--normal)}.sidebar-backdrop{animation:fade-in 180ms ease}.page-enter{animation:page-in 220ms var(--ease) both}.kpi-card.enter{animation:card-in 280ms var(--ease) both;animation-delay:calc(min(var(--stagger),4)*35ms)}.bar-fill.enter{animation:bar-in 280ms var(--ease) both}.chart-line.enter,.chart-area.enter{animation:fade-in 280ms ease both}.toast{animation:toast-in 220ms var(--ease) both}.toast.is-leaving{animation:toast-out 160ms ease both}.modal[open]{animation:modal-in 200ms var(--ease) both}.modal.is-closing{animation:modal-out 140ms ease both}.modal[open]::backdrop{animation:fade-in 160ms ease}.login-card{animation:card-in 280ms var(--ease) both}.row-enter{animation:card-in 180ms var(--ease) both}.row-removing{animation:toast-out 140ms ease both;pointer-events:none}.value-changed{animation:value-flash 220ms ease both}.skeleton:after{animation:skeleton-sweep 700ms ease 3}.button-spinner{animation:spin 700ms linear 8}.navigation-loading{animation:fade-in 120ms ease both}.loading-notice{animation:fade-in 140ms ease both}
 @keyframes page-in{from{opacity:.6;transform:translateY(5px)}to{opacity:1;transform:none}}@keyframes fade-in{from{opacity:0}to{opacity:1}}@keyframes card-in{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}@keyframes active-in{from{opacity:0;transform:scaleY(.3)}to{opacity:1;transform:scaleY(1)}}@keyframes bar-in{from{transform:scaleX(.2);opacity:.6}to{transform:scaleX(1);opacity:1}}@keyframes toast-in{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}@keyframes toast-out{to{opacity:0;transform:translateY(-4px)}}@keyframes modal-in{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}@keyframes modal-out{to{opacity:0;transform:translateY(5px) scale(.99)}}@keyframes value-flash{0%{opacity:.55;transform:translateY(2px)}100%{opacity:1;transform:none}}@keyframes skeleton-sweep{to{transform:translateX(100%)}}@keyframes spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Dashboard timing. Durations below are in ms; the shared multiplier controls the sequence. */
+:root {
+  --motion-speed: 1;
+  --kpi-start-ms: 300;
+  --kpi-step-ms: 90;
+  --counter-ms: 820;
+  --chart-start: calc(780ms * var(--motion-speed));
+  --chart-time: calc(620ms * var(--motion-speed));
+  --stage-ease: cubic-bezier(.19,.78,.26,1);
+}
+@keyframes shell-left { from { opacity:.25; transform:translateX(-18px) } }
+@keyframes shell-down { from { opacity:.15; transform:translateY(-10px) } }
+@keyframes metric-rise { from { opacity:0; transform:translateY(20px) scale(.98) } }
+@keyframes panel-rise { from { opacity:0; transform:translateY(12px) } }
+@keyframes draw-curve { from { stroke-dashoffset:1 } to { stroke-dashoffset:0 } }
+@keyframes grow-column { from { transform:scaleY(0) } }
+@keyframes grow-row { from { transform:scaleX(0) } }
+@keyframes reveal-segment { from { stroke-dasharray:0 100 } to { stroke-dasharray:var(--share) 100 } }
+
+@media (prefers-reduced-motion:no-preference) {
+  .shell-intro .app-header { animation:shell-down calc(400ms * var(--motion-speed)) var(--stage-ease) calc(90ms * var(--motion-speed)) backwards; }
+  .shell-intro .header-right > *, .dashboard-intro .welcome > * {
+    animation:panel-rise calc(430ms * var(--motion-speed)) var(--stage-ease) calc(170ms * var(--motion-speed)) backwards;
+  }
+  .shell-intro .profile-menu { animation-delay:calc(240ms * var(--motion-speed)); }
+  .dashboard-intro .metric {
+    animation:metric-rise calc(480ms * var(--motion-speed)) var(--stage-ease)
+      calc((var(--kpi-start-ms) + var(--stagger) * var(--kpi-step-ms)) * 1ms * var(--motion-speed)) backwards;
+  }
+  .dashboard-intro .insights { --chart-delay:var(--chart-start); }
+  .dashboard-refresh .insights, .chart-reveal { --chart-delay:0ms; }
+  :is(.dashboard-intro,.dashboard-refresh) .curve, .chart-reveal .curve {
+    stroke-dasharray:1;
+    animation:draw-curve var(--chart-time) ease-out var(--chart-delay,0ms) backwards;
+  }
+  :is(.dashboard-intro,.dashboard-refresh,.chart-reveal) .plot line {
+    transform-box:fill-box; transform-origin:bottom;
+    animation:grow-column var(--chart-time) var(--stage-ease) var(--chart-delay,0ms) backwards;
+  }
+  :is(.dashboard-intro,.dashboard-refresh) .ring-piece {
+    animation:reveal-segment var(--chart-time) var(--stage-ease) var(--chart-delay,0ms) backwards;
+  }
+  :is(.dashboard-intro,.dashboard-refresh,.chart-reveal) :is(.area,.plot circle,.axis,.pay-legend) {
+    animation:fade-in var(--chart-time) ease var(--chart-delay,0ms) backwards;
+  }
+  .panel-reveal {
+    animation:panel-rise calc(410ms * var(--motion-speed)) var(--stage-ease)
+      calc(var(--panel-wait,0ms) + var(--panel-index,0) * 65ms * var(--motion-speed)) backwards;
+  }
+  :is(.panel-reveal,.chart-reveal) :is(.rank em,.stock-band i) {
+    transform-origin:left;
+    animation:grow-row calc(500ms * var(--motion-speed)) var(--stage-ease) var(--panel-wait,0ms) backwards;
+  }
+  .graph-tooltip:not([hidden]) { animation:fade-in 150ms ease-out; }
+  .executive .metric { transition:transform 180ms ease,box-shadow 180ms ease,border-color 180ms ease; }
+  @media (hover:hover) {
+    .executive .metric:hover { transform:translateY(-3px); box-shadow:0 6px 16px #37234412; }
+  }
+  @media (min-width:1024px) {
+    .shell-intro .sidebar { animation:shell-left calc(390ms * var(--motion-speed)) var(--stage-ease) backwards; }
+    .shell-intro .nav-link .icon { animation:panel-rise calc(300ms * var(--motion-speed)) var(--stage-ease) calc(var(--nav-index,0) * 27ms * var(--motion-speed)) backwards; }
+  }
+}
