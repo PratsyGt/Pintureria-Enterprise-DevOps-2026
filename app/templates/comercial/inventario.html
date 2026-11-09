@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}
+Inventario
+{% endblock %}
+{% block content %}
+<section class="hero">
+<span class="section-label">Bodega</span>
+<h2>
+Inventario actual
+</h2>
+<p>
+Existencias por producto, presentación y color.
+</p>
+</section>
+<section class="cards">
+<article class="metric">
+<span>Referencias</span><strong>{{ resumen_inv.productos }}</strong>
+</article>
+<article class="metric">
+<span>Sin existencias</span><strong>{{ resumen_inv.sin_stock }}</strong>
+</article>
+<article class="metric">
+<span>Existencia baja</span><strong>{{ resumen_inv.bajos }}</strong>
+</article>
+</section>
+<article class="panel">
+<p>
+<a class="button" href="{% url 'producto_nuevo' %}?siguiente={{ request.path|urlencode }}">+ Nuevo producto</a>
+</p>
+<div class="inventory-toolbar">
+
+<div>
+<a class="button" href="{% url 'inventario_movimientos' %}">Movimientos</a> <a class="button" href="{% url 'compras' %}">Órdenes de compra</a>
+</div>
+</div>
+<section class="table-scroll">
+<div class="table-scroll">{% include 'components/pagination.html' %}<table data-server-list>
+<thead>
+<tr>
+<th>SKU</th><th>Producto</th><th>Presentación</th><th>Color</th><th>Disponible</th><th>Mínimo</th><th>Estado</th><th>Lotes</th>
+</tr>
+</thead>
+<tbody>
+{% for r in rows %}
+<tr>
+<td>{{ r.SKU }}</td><td>{{ r.Producto }}</td><td>{{ r.Presentacion }}</td><td>{{ r.Color|default:'—' }}</td><td>{{ r.StockActual|floatformat:3 }}</td><td>{{ r.StockMinimo|floatformat:3 }}</td><td><span class="inventory-status
+{% if r.Estado == 'SIN STOCK' %}
+out
+{% elif r.Estado == 'BAJO' %}
+low
+{% else %}
+good
+{% endif %}
+">{{ r.Estado }}</span></td><td><a href="{% url 'inventario_lotes' %}?variante={{ r.VarianteID }}">Ver lotes ({{ r.LotesDisponibles }})</a></td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="8">No se encontraron productos.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+</section>
+</article>
+{% endblock %}

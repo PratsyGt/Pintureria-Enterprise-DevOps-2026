@@ -1,0 +1,189 @@
+{
+  "responsive": [
+    {
+      "width": 360,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 360,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 360,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 360,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 360,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 360,
+      "route": "/perfil/",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 390,
+      "route": "/perfil/",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 768,
+      "route": "/perfil/",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 1024,
+      "route": "/perfil/",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 1366,
+      "route": "/perfil/",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/comercial/facturas/?desde=2026-11-04&hasta=2026-11-04",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/comercial/compras/?proveedor=1",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/comercial/cotizaciones/",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/comercial/inventario/lotes/?variante=8",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/comercial/facturas/nueva/",
+      "ok": true
+    },
+    {
+      "width": 1920,
+      "route": "/perfil/",
+      "ok": true
+    }
+  ],
+  "errorPreservesData": true,
+  "activeNavigation": true,
+  "dateFiltering": true,
+  "sidebar": true,
+  "errors": []
+}

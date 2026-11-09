@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}
+Usuarios
+{% endblock %}
+{% block content %}
+<header class="page-head">
+<div>
+<h1>
+Usuarios y roles
+</h1>
+<p class="muted">
+Administración de acceso al sistema.
+</p>
+</div>
+<a class="btn primary" href="{% url 'usuario_nuevo' %}">+ Nuevo usuario</a>
+</header>
+<section class="role-grid">
+{% for r in roles %}
+<article class="role-card">
+<strong>{{ r.Nombre }}</strong><span>{{ r.Descripcion|default:'-' }}</span>
+</article>
+{% endfor %}
+</section>
+<section class="table-wrap">
+<div class="table-scroll">{% include 'components/pagination.html' %}<table data-server-list>
+<thead>
+<tr>
+<th>ID</th><th>Usuario</th><th>Nombre</th><th>Correo</th><th>Rol</th><th>Estado</th><th>Último acceso</th><th>Acciones</th>
+</tr>
+</thead>
+<tbody>
+{% for u in usuarios %}
+<tr>
+<td>{{ u.UsuarioID }}</td><td>{{ u.NombreUsuario }}</td><td>{{ u.Nombres }} {{ u.Apellidos }}</td><td>{{ u.Correo|default:'-' }}</td><td><span class="badge">{{ u.Rol }}</span></td>
+<td>
+{% if u.Activo %}
+<span class="status ok">Activo</span>
+{% else %}
+<span class="status off">Inactivo</span>
+{% endif %}
+</td><td>{{ u.UltimoAcceso|default:'-' }}</td>
+<td class="actions"><a class="btn small" href="{% url 'usuario_editar' u.UsuarioID %}">Editar</a>
+{% if u.Activo %}
+<form method="post" action="{% url 'usuario_estado' u.UsuarioID 0 %}" style="display:inline">
+{% csrf_token %}
+<button class="btn small danger" type="submit">Desactivar</button>
+</form>
+{% else %}
+<form method="post" action="{% url 'usuario_estado' u.UsuarioID 1 %}" style="display:inline">
+{% csrf_token %}
+<button class="btn small success" type="submit">Activar</button>
+</form>
+{% endif %}
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="8" class="empty-state">No hay usuarios registrados.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+</section>
+{% endblock %}

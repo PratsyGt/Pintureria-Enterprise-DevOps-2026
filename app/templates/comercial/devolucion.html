@@ -1,0 +1,5 @@
+{% extends 'base.html' %}{% block content %}
+<header class="page-head"><div><h1>Devolución · {{ f.NumeroFactura }}</h1><p>Las unidades vuelven a los lotes originales. El servidor verifica el saldo vendido.</p></div></header>
+<form method="post" class="panel form-grid" data-confirm="¿Registrar esta devolución?">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}<div class="form-actions"><button class="btn primary">Registrar devolución</button></div></form>
+<section class="panel"><h2>Historial</h2><div class="table-wrap"><table data-list><thead><tr><th>ID</th><th>Fecha</th><th>Línea</th><th>Cantidad</th><th>Monto</th><th>Motivo</th></tr></thead><tbody>{% for r in historial %}<tr><td>{{ r.DevolucionID }}</td><td data-sort="{{ r.FechaDevolucion|date:'c' }}">{{ r.FechaDevolucion }}</td><td>{{ r.FacturaDetalleID }}</td><td>{{ r.Cantidad }}</td><td>{{ r.Monto }}</td><td>{{ r.Motivo }}</td></tr>{% empty %}<tr><td colspan="6">Sin devoluciones.</td></tr>{% endfor %}</tbody></table></div></div></section>
+{% endblock %}

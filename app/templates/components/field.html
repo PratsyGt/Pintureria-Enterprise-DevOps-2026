@@ -1,0 +1,1 @@
+<div class="field {% if field.errors %}has-error{% endif %}">{{ field.label_tag }}{% if field.field.required %}<span class="required-hint">Obligatorio</span>{% endif %}{{ field }}{% if field.help_text %}<small id="{{ field.auto_id }}_helptext">{{ field.help_text }}</small>{% endif %}{{ field.errors }}</div>

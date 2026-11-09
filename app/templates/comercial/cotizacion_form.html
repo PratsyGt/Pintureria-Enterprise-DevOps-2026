@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Nueva cotización
+{% endblock %}
+{% block content %}
+<section class="hero">
+<span class="section-label">Ventas</span>
+<h2>
+Nueva cotización
+</h2>
+<p>
+Complete los datos de la operación y revise las cantidades antes de guardar.
+</p>
+</section>
+<article class="panel" data-commercial-mode="cotizacion">
+<form method="post" data-lines-form>
+{% csrf_token %}
+<label>Cliente</label><select name="cliente_id" required>
+{% for c in clientes %}
+<option value="{{c.ClienteID}}">{{c.ClienteID}} · {{c.Nombre}} · NIT {{c.NIT|default:"CF"}}</option>
+{% endfor %}
+</select><label>Vigencia</label><input type="date" name="vigencia"><label>Observaciones</label><input name="observaciones" maxlength="300">
+<div id="line-editor">
+<h3>
+Detalle de productos
+</h3>
+<p>
+<a class="button" href="{% url 'producto_nuevo' %}?siguiente={{ request.path|urlencode }}">+ Nuevo producto</a>
+</p>
+<div style="overflow-x:auto">
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Producto</th><th>Cantidad</th><th>Descuento Q</th><th>Importe</th><th>Acción</th>
+</tr>
+</thead>
+<tbody id="line-rows">
+</tbody>
+</table></div>
+</div>
+<button type="button" id="add-line">+ Agregar producto</button>
+<p>
+<strong>Total aproximado: <span id="grand-total">Q 0.00</span></strong>
+</p>
+</div>
+<input type="hidden" name="detalle_json" required><button type="submit">Guardar cotización</button> <a href="{% url 'cotizaciones' %}">Cancelar</a>
+</form>
+</article>
+{{ draft|json_script:"commercial-draft" }}
+{{ productos|json_script:"product-data" }}{{ pagos|json_script:"payment-data" }}{{ ubicaciones|json_script:"location-data" }}{{ detalle|json_script:"order-data" }}
+<script defer src="{% static 'js/comercial.js' %}">
+</script>
+{% endblock %}

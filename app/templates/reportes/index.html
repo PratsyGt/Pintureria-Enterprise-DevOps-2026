@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Reportes · Pinturería{% endblock %}
+{% block content %}
+<header class="page-head"><div><span class="section-label">Análisis del negocio</span><h1>Centro de reportes</h1><p class="muted">Ventas, inventario y documentos desde SQL Server.</p></div></header>
+<form method="get" class="panel form-grid no-print">{{ form.non_field_errors }}{% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}<div class="form-actions"><button class="btn primary">Consultar</button></div></form>
+{% if tablas %}<div class="page-head no-print"><h2>{{ titulo }}</h2><div class="actions"><a class="btn primary" href="?{{ pdf_query }}" target="_blank" rel="noopener">Generar PDF</a><a class="btn" href="?{{ csv_query }}">Exportar CSV</a><button class="btn" onclick="window.print()">Imprimir</button></div></div>
+<p>Período: {{ form.desde.value|default:'Actual' }} — {{ form.hasta.value|default:'Actual' }} · {% now 'd/m/Y H:i' %}</p>
+<p class="muted">Ventas vigentes: excluyen facturas anuladas. Los importes facturados son brutos; las devoluciones conservan su registro separado.</p>
+{% for tabla in tablas %}<section class="panel"><h3>{{ tabla.titulo }}</h3><div class="table-wrap"><table data-list><thead><tr>{% for h in tabla.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead><tbody>{% for row in tabla.rows %}<tr>{% for value in row %}<td>{{ value|default_if_none:'—' }}</td>{% endfor %}</tr>{% empty %}<tr><td>No hay registros para estos filtros.</td></tr>{% endfor %}</tbody></table></div></section>{% endfor %}{% endif %}
+{% endblock %}

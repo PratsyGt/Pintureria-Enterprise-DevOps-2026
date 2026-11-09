@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+Cotizaciones
+{% endblock %}
+{% block content %}
+<section class="hero">
+<span class="section-label">Ventas</span>
+<h2>
+Cotizaciones
+</h2>
+<p>
+Consulta las cotizaciones y prepara nuevas propuestas.
+</p>
+{% if permisos.cotizaciones.editar %}<a class="button" href="{% url 'cotizacion_nueva' %}">Nueva cotización</a>{% endif %}
+</section>
+<article class="panel">
+<div class="table-scroll">{% include 'components/pagination.html' %}<table data-server-list>
+<thead>
+<tr>
+<th>Número</th><th>Fecha</th><th>Cliente</th><th>Estado</th><th>Total</th><th>Acción</th>
+</tr>
+</thead>
+<tbody>
+{% for r in rows %}
+<tr>
+<td>#<a href="{% url 'cotizacion_detalle' r.CotizacionID %}">{{r.CotizacionID}}</a></td><td data-sort="{{ r.FechaCotizacion|date:'c' }}">{{r.FechaCotizacion}}</td><td>{{r.Cliente}}</td><td>{{r.Estado}}</td><td>Q {{r.Total|floatformat:2}}</td><td>
+{% if permisos.cotizaciones.editar and r.Estado == 'PENDIENTE' %}
+<form method="post" action="{% url 'cotizacion_confirmar' r.CotizacionID %}" style="display:inline">
+{% csrf_token %}
+<button type="submit">Confirmar</button>
+</form>
+{% elif permisos.facturas.editar and r.Estado == 'CONFIRMADA' %}
+<a href="{% url 'factura_nueva' %}?cotizacion={{r.CotizacionID}}">Facturar</a>
+{% endif %}
+</td>
+</tr>
+{% empty %}
+<tr>
+<td colspan="6">No hay cotizaciones registradas.</td>
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+</article>
+{% endblock %}

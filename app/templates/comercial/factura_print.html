@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}
+Factura {{f.NumeroFactura}}
+{% endblock %}
+{% block content %}
+<article class="panel invoice">
+<div class="no-print actions">{% if permisos.anulaciones.editar and f.Estado == 'EMITIDA' %}<a class="btn danger" href="{% url 'factura_anular' %}?numero={{ f.NumeroFactura|urlencode }}">Anular factura</a>{% endif %}{% if permisos.devoluciones.editar and f.Estado == 'EMITIDA' %}<a class="btn" href="{% url 'devolucion' f.FacturaID %}">Devolución</a>{% endif %}
+<a href="{% url 'facturas' %}">← Volver a facturas</a> <button onclick="window.print()">Imprimir factura</button>
+</div>
+<header style="display:flex;justify-content:space-between;gap:20px">
+<div>
+<h1>
+PINTURERÍA ENTERPRISE
+</h1>
+<p>
+Comprobante interno de venta
+</p>
+</div>
+<div>
+<h2>
+{{f.NumeroFactura}}
+</h2>
+<p>
+{{f.FechaFactura}}
+</p>
+<strong>{{f.Estado}}</strong>
+</div>
+</header>
+<hr>
+<h3>
+Cliente
+</h3>
+<p>
+<strong>{{f.Cliente}}</strong><br>NIT: {{f.NIT|default:'C/F'}}<br>{{f.Direccion|default:''}}<br>{{f.Telefono|default:''}}
+</p>
+<p>
+Atendido por: {{f.Vendedor}}
+</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Producto</th><th>SKU</th><th>Presentación/color</th><th>Cant.</th><th>Precio</th><th>Desc.</th><th>Importe</th>
+</tr>
+</thead>
+<tbody>
+{% for d in det %}
+<tr>
+<td>{{d.Producto}}</td><td>{{d.SKU}}</td><td>{{d.Presentacion}}
+{% if d.Color %}
+/ {{d.Color}}
+{% endif %}
+</td><td>{{d.Cantidad}}</td><td>Q {{d.PrecioUnitario|floatformat:2}}</td><td>Q {{d.Descuento|floatformat:2}}</td><td>Q {{d.Importe|floatformat:2}}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+<div style="margin-left:auto;max-width:280px">
+<p>
+Subtotal: Q {{f.Subtotal|floatformat:2}}
+</p>
+<p>
+Descuento: Q {{f.Descuento|floatformat:2}}
+</p>
+<h2>
+Total: Q {{f.Total|floatformat:2}}
+</h2>
+</div>
+{% if f.Estado == 'ANULADA' %}<p class="alert">ANULADA · {{ f.FechaAnulacion }} · {{ f.MotivoAnulacion }}. Detalle y pagos históricos sin vigencia comercial.</p>{% endif %}
+<h3>
+Medios de pago
+</h3>
+<div class="table-scroll"><table>
+<tr>
+<th>Medio</th><th>Referencia</th><th>Monto</th>
+</tr>
+{% for p in pagos %}
+<tr>
+<td>{{p.Nombre}}</td><td>{{p.Referencia|default:'—'}}</td><td>Q {{p.Monto|floatformat:2}}</td>
+</tr>
+{% endfor %}
+</table></div>
+<p style="text-align:center;margin-top:35px">
+Gracias por su compra.
+</p>
+</article>
+<style>@media print{.topbar,.no-print,.alert{display:none!important}body{background:white}.container{max-width:none;margin:0;padding:0}.panel{box-shadow:none;border:0}}</style>
+{% endblock %}

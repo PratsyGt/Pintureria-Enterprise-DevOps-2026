@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+Recepción de compra
+{% endblock %}
+{% block content %}
+<section class="hero">
+<span class="section-label">Bodega</span>
+<h2>
+Recepción de compra
+</h2>
+<p>
+Complete los datos de la operación y revise las cantidades antes de guardar.
+</p>
+</section>
+<article class="panel" data-commercial-mode="recepcion">
+<form method="post" data-lines-form>
+{% csrf_token %}
+<h3>
+Orden #{{ orden.OrdenCompraID }} · {{ orden.Proveedor }}
+</h3>
+<p>
+Estado: {{ orden.Estado }}
+</p>
+<label>Documento de proveedor</label><input name="documento" maxlength="60"><label>Observaciones</label><input name="observaciones" maxlength="300">
+<p>
+Seleccione el detalle, cantidad realmente entregada, ubicación y costo. Se muestra el saldo pendiente por recibir.
+</p>
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>SKU</th><th>Solicitado</th><th>Recibido</th><th>Pendiente</th>
+</tr>
+</thead>
+<tbody>
+{% for d in detalle %}
+<tr>
+<td>{{ d.SKU }}</td><td>{{ d.CantidadSolicitada }}</td><td>{{ d.CantidadRecibida }}</td><td>{{ d.Pendiente }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table></div>
+<div id="line-editor">
+<h3>
+Detalle de productos
+</h3>
+<div style="overflow-x:auto">
+<div class="table-scroll"><table>
+<thead>
+<tr>
+<th>Producto</th><th>Cantidad</th><th>Costo Q</th><th>Ubicación</th><th>Código de lote</th><th>Importe</th><th>Acción</th>
+</tr>
+</thead>
+<tbody id="line-rows">
+</tbody>
+</table></div>
+</div>
+<button type="button" id="add-line">+ Agregar producto</button>
+<p>
+<strong>Total aproximado: <span id="grand-total">Q 0.00</span></strong>
+</p>
+</div>
+<input type="hidden" name="detalle_json" required><button type="submit">Confirmar recepción</button> <a href="{% url 'compras' %}">Cancelar</a>
+</form>
+<p class="muted">
+Los importes mostrados se verifican nuevamente en SQL Server. Ningún movimiento queda registrado si la operación falla.
+</p>
+</article>
+{{ draft|json_script:"commercial-draft" }}
+{{ productos|json_script:"product-data" }}{{ pagos|json_script:"payment-data" }}{{ ubicaciones|json_script:"location-data" }}{{ detalle|json_script:"order-data" }}
+<script defer src="{% static 'js/comercial.js' %}">
+</script>
+{% endblock %}

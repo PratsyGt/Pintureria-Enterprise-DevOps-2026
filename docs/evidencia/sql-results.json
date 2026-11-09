@@ -1,0 +1,11 @@
+{
+  "database": "PintureriaEnterpriseQA_2e667eb0",
+  "fifo": true,
+  "restoredAfterAnnulment": true,
+  "stock": 32,
+  "invoiceCount": 3,
+  "activeInvoices": 2,
+  "grossSales": 252,
+  "idempotencyAuditCount": 3,
+  "changedPayloadRejected": true
+}
