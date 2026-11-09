@@ -1,0 +1,6 @@
+services:
+  web:
+    command: ["gunicorn","config.wsgi:application","--bind=0.0.0.0:8000","--workers=2"]
+    volumes: !reset []
+    environment:
+      DEBUG: "0"

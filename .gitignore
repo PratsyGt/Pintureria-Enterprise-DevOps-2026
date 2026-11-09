@@ -7,3 +7,11 @@ __pycache__/
 .venv/
 tmp/
 output/
+
+.env.*
+!.env.example
+!.env.docker.example
+deploy-secrets/
+app/staticfiles/
+*.bak
+*.kubeconfig

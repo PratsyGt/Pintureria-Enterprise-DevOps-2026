@@ -1,0 +1,62 @@
+name: pintureria-redes
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Configure MSSQL_SA_PASSWORD}
+      TZ: America/Guatemala
+    volumes:
+      - sql-data:/var/opt/mssql
+    networks: [database]
+    healthcheck:
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 6s
+      retries: 20
+      start_period: 30s
+  init:
+    image: ${APP_IMAGE:-pintureria-redes:dev}
+    command: ["python", "/srv/ops/bootstrap.py"]
+    restart: "no"
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [database]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Configure MSSQL_SA_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:?Configure DB_PASSWORD}
+    healthcheck: {disable: true}
+  web:
+    image: ${APP_IMAGE:-pintureria-redes:dev}
+    build: {context: ., target: production}
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+    ports: ["127.0.0.1:${WEB_PORT:-8000}:8000"]
+    volumes:
+      - ./app/config:/srv/app/config:ro
+      - ./app/core:/srv/app/core:ro
+      - ./app/seguridad:/srv/app/seguridad:ro
+      - ./app/catalogos:/srv/app/catalogos:ro
+      - ./app/comercial:/srv/app/comercial:ro
+      - ./app/reportes:/srv/app/reportes:ro
+      - ./app/static:/srv/app/static:ro
+      - ./app/templates:/srv/app/templates:ro
+    depends_on:
+      init: {condition: service_completed_successfully}
+    networks: [frontend, database]
+    environment:
+      DEBUG: "1"
+      SECRET_KEY: ${SECRET_KEY:?Configure SECRET_KEY}
+      ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DB_HOST: db
+      DB_PORT: "1433"
+      DB_USER: pos_app
+      DB_PASSWORD: ${DB_PASSWORD:?Configure DB_PASSWORD}
+      DB_TRUSTED_CONNECTION: "no"
+networks:
+  database: {internal: true}
+  frontend: {}
+volumes:
+  sql-data: {}

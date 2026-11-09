@@ -3,14 +3,26 @@ import os
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR / '.env')
+CONTAINER = os.getenv('APP_CONTAINER') == '1'
+if not CONTAINER:
+    load_dotenv(BASE_DIR / '.env')
 
 from django.core.exceptions import ImproperlyConfigured
 SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY or len(SECRET_KEY)<50:
     raise ImproperlyConfigured('Configure SECRET_KEY en app/.env (mínimo 50 caracteres aleatorios).')
 DEBUG = os.getenv('DEBUG','1') == '1'
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS','localhost,127.0.0.1,testserver').split(',')
+def env_list(name, default=''):
+    return [item.strip() for item in os.getenv(name, default).split(',') if item.strip()]
+
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS', 'localhost,127.0.0.1,testserver')
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+if os.getenv('TRUST_PROXY') == '1':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = os.getenv('HTTPS_ONLY') == '1'
+SECURE_REDIRECT_EXEMPT = [r'^health/(live|ready)/$']
+SECURE_HSTS_SECONDS = 31536000 if SECURE_SSL_REDIRECT else 0
+
 
 INSTALLED_APPS = [
     'django.contrib.staticfiles',
@@ -48,20 +60,24 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION='config.wsgi.application'
 
-DB_SERVER=os.getenv('DB_SERVER',r'localhost\SQLEXPRESS')
+if CONTAINER:
+    MIDDLEWARE.insert(2, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+DB_SERVER=os.getenv('DB_HOST') or os.getenv('DB_SERVER',r'localhost\SQLEXPRESS')
 DB_NAME=os.getenv('DB_NAME','PintureriaDB')
 DB_USER=os.getenv('DB_USER','')
 DB_PASSWORD=os.getenv('DB_PASSWORD','')
 trusted=os.getenv('DB_TRUSTED_CONNECTION','yes').lower() in ('1','yes','true','si')
-extra='TrustServerCertificate=yes'
+extra='Encrypt=yes;TrustServerCertificate=' + ('yes' if os.getenv('DB_TRUST_CERT','yes')=='yes' else 'no')
 if trusted and not DB_USER:
-    extra='Trusted_Connection=yes;TrustServerCertificate=yes'
+    extra='Trusted_Connection=yes;' + extra
 
 DATABASES={
     'default':{
         'ENGINE':'mssql',
         'NAME':DB_NAME,
         'HOST':DB_SERVER,
+        'PORT':os.getenv('DB_PORT',''),
         'USER':DB_USER,
         'PASSWORD':DB_PASSWORD,
         'OPTIONS':{
@@ -77,6 +93,7 @@ TIME_ZONE='America/Guatemala'
 USE_I18N=True
 USE_TZ=False
 STATIC_URL='/static/'
+STATIC_ROOT = Path(os.getenv('STATIC_ROOT', BASE_DIR / 'staticfiles'))
 STATICFILES_DIRS=[BASE_DIR/'static']
 DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
 

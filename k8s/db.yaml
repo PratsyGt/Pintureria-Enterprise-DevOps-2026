@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata: {name: db, namespace: pintureria-redes}
+spec:
+  clusterIP: None
+  selector: {app: pos-db}
+  ports: [{name: sql, port: 1433}]
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: {name: sql, namespace: pintureria-redes}
+spec:
+  serviceName: db
+  replicas: 1
+  selector: {matchLabels: {app: pos-db}}
+  template:
+    metadata: {labels: {app: pos-db}}
+    spec:
+      automountServiceAccountToken: false
+      nodeSelector: {kubernetes.io/arch: amd64}
+      securityContext: {fsGroup: 10001}
+      containers:
+        - name: sql
+          image: mcr.microsoft.com/mssql/server:2022-latest
+          ports: [{containerPort: 1433}]
+          env:
+            - {name: ACCEPT_EULA, value: "Y"}
+            - {name: MSSQL_PID, value: Express}
+            - {name: TZ, value: America/Guatemala}
+            - name: MSSQL_SA_PASSWORD
+              valueFrom: {secretKeyRef: {name: sql-admin, key: MSSQL_SA_PASSWORD}}
+          readinessProbe:
+            tcpSocket: {port: 1433}
+            periodSeconds: 5
+          resources:
+            requests: {cpu: 250m, memory: 2Gi}
+            limits: {cpu: "2", memory: 3Gi}
+          volumeMounts: [{name: datos, mountPath: /var/opt/mssql}]
+  volumeClaimTemplates:
+    - metadata: {name: datos}
+      spec:
+        accessModes: [ReadWriteOnce]
+        resources: {requests: {storage: 10Gi}}

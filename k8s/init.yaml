@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata: {name: inicializar-sql, namespace: pintureria-redes}
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: Never
+      containers:
+        - name: init
+          image: __IMAGE__
+          imagePullPolicy: IfNotPresent
+          command: [python, /srv/ops/bootstrap.py]
+          env:
+            - name: MSSQL_SA_PASSWORD
+              valueFrom: {secretKeyRef: {name: sql-admin, key: MSSQL_SA_PASSWORD}}
+            - name: DB_PASSWORD
+              valueFrom: {secretKeyRef: {name: pos-secret, key: DB_PASSWORD}}

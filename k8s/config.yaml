@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata: {name: pos-config, namespace: pintureria-redes}
+data:
+  DEBUG: "0"
+  DB_HOST: db
+  DB_PORT: "1433"
+  DB_USER: pos_app
+  DB_TRUSTED_CONNECTION: "no"
+  ALLOWED_HOSTS: "__HOST__,127.0.0.1,localhost"
+  CSRF_TRUSTED_ORIGINS: "https://__HOST__"
+  TRUST_PROXY: "1"
+  HTTPS_ONLY: "1"

@@ -1,0 +1,56 @@
+name: pintureria-produccion
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Configure MSSQL_SA_PASSWORD}
+      TZ: America/Guatemala
+    volumes:
+      - sql-data:/var/opt/mssql
+    networks: [database]
+    healthcheck:
+      test: ["CMD-SHELL", "SQLCMDPASSWORD=\"$$MSSQL_SA_PASSWORD\" /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 6s
+      retries: 20
+      start_period: 30s
+  init:
+    image: ${APP_IMAGE:?Configure APP_IMAGE}
+    command: ["python", "/srv/ops/bootstrap.py"]
+    restart: "no"
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [database]
+    environment:
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Configure MSSQL_SA_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:?Configure DB_PASSWORD}
+    healthcheck: {disable: true}
+  web:
+    image: ${APP_IMAGE:?Configure APP_IMAGE}
+    restart: unless-stopped
+    expose: ["8000"]
+    stop_grace_period: 35s
+    depends_on:
+      init: {condition: service_completed_successfully}
+    networks: [frontend, database]
+    environment:
+      DEBUG: "0"
+      SECRET_KEY: ${SECRET_KEY:?Configure SECRET_KEY}
+      ALLOWED_HOSTS: "${PUBLIC_HOST:?Configure PUBLIC_HOST},127.0.0.1,localhost"
+      CSRF_TRUSTED_ORIGINS: "https://${PUBLIC_HOST}"
+      TRUST_PROXY: "1"
+      HTTPS_ONLY: "1"
+      DB_HOST: db
+      DB_PORT: "1433"
+      DB_USER: pos_app
+      DB_PASSWORD: ${DB_PASSWORD:?Configure DB_PASSWORD}
+      DB_TRUSTED_CONNECTION: "no"
+networks:
+  database: {internal: true}
+  frontend: {}
+volumes:
+  sql-data: {}

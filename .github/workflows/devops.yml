@@ -1,0 +1,86 @@
+name: Pinturería DevOps
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pos-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  validate-and-publish:
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.publish.outputs.image }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configurar entorno efímero
+        run: python ops/local_env.py
+      - name: Pruebas Django dentro de la imagen
+        run: |
+          docker build --target tests -t pos-tests .
+          docker run --rm --env-file .env.docker pos-tests
+      - name: Construir la imagen de entrega
+        run: docker build --target production --build-arg APP_REVISION="$GITHUB_SHA" -t pintureria-redes:dev .
+      - name: Arrancar SQL, instalar esquema y probar Gunicorn
+        run: |
+          docker compose --env-file .env.docker -f compose.dev.yml -f ops/compose.ci.yml up -d --no-build --wait --wait-timeout 300
+          curl -fsS http://localhost:8000/health/ready/ | jq -e --arg sha "$GITHUB_SHA" '.status=="ok" and .revision==$sha'
+          curl -fsS http://localhost:8000/static/css/motion.css | grep -q 'keyframes'
+          docker compose --env-file .env.docker -f compose.dev.yml run --rm --no-deps init
+      - name: Diagnóstico si falla
+        if: failure()
+        run: docker compose --env-file .env.docker -f compose.dev.yml logs --tail 35 init web
+      - name: Publicar la imagen probada por SHA
+        id: publish
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+        env:
+          IMAGE: ${{ vars.DOCKERHUB_IMAGE }}
+          USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        run: |
+          set -eu
+          echo "$TOKEN" | docker login -u "$USERNAME" --password-stdin
+          docker tag pintureria-redes:dev "$IMAGE:$GITHUB_SHA"
+          docker push "$IMAGE:$GITHUB_SHA" | tee "$RUNNER_TEMP/push.log"
+          digest=$(sed -nE 's/.*digest: (sha256:[a-f0-9]{64}).*/\1/p' "$RUNNER_TEMP/push.log" | tail -1)
+          test -n "$digest"
+          ref="$IMAGE@$digest"
+          echo "image=$ref" >> "$GITHUB_OUTPUT"
+          echo "Imagen publicada: $ref" >> "$GITHUB_STEP_SUMMARY"
+  dokploy:
+    runs-on: ubuntu-latest
+    needs: validate-and-publish
+    if: needs.validate-and-publish.outputs.image != '' && vars.ENABLE_DOKPLOY == 'true'
+    environment: dokploy
+    steps:
+      - uses: actions/checkout@v4
+      - run: python ops/dokploy_release.py
+        env:
+          RELEASE_IMAGE: ${{ needs.validate-and-publish.outputs.image }}
+          DOKPLOY_URL: ${{ vars.DOKPLOY_URL }}
+          DOKPLOY_COMPOSE_ID: ${{ vars.DOKPLOY_COMPOSE_ID }}
+          DOKPLOY_TOKEN: ${{ secrets.DOKPLOY_TOKEN }}
+      - run: python ops/verify_release.py "$PUBLIC_URL" "$GITHUB_SHA"
+        env:
+          PUBLIC_URL: ${{ vars.PUBLIC_URL }}
+  kubernetes:
+    runs-on: ubuntu-latest
+    needs: validate-and-publish
+    if: needs.validate-and-publish.outputs.image != '' && vars.ENABLE_K8S == 'true'
+    environment: kubernetes
+    steps:
+      - uses: actions/checkout@v4
+      - name: Actualizar réplicas
+        env:
+          KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG_B64 }}
+          HOST: ${{ vars.PUBLIC_HOST }}
+          IMAGE: ${{ needs.validate-and-publish.outputs.image }}
+        run: |
+          umask 077
+          export KUBECONFIG="$RUNNER_TEMP/pos.kubeconfig"
+          printf '%s' "$KUBE_CONFIG_B64" | base64 -d > "$KUBECONFIG"
+          python ops/kube_apply.py release --context "$(kubectl config current-context)" --host "$HOST" --image "$IMAGE"
+          python ops/verify_release.py "https://$HOST" "$GITHUB_SHA"

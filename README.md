@@ -125,3 +125,7 @@ El límite de intentos de login usa caché local (8 intentos por usuario/IP, 5 m
 ## Archivos de entrega
 
 `MEJORAS_ENTERPRISE.md` describe esta transformación; `CAMBIOS_FINALES.md` documenta la etapa anterior. `AUDITORIA.md` conserva el diagnóstico inicial. El ZIP final excluye `.env`, entorno virtual, temporales y credenciales.
+
+## Proyecto de Redes y DevOps
+
+Para Docker, Dokploy, Kubernetes y el pipeline de publicación consulta [la guía de Redes](docs/devops/README.md).
