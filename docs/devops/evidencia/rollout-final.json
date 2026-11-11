@@ -1,0 +1,33 @@
+{
+  "cluster": "docker-desktop",
+  "namespace": "pintureria-redes",
+  "tlsHost": "pos.redes.test",
+  "peerVerified": true,
+  "before": {
+    "status": "ok",
+    "revision": "2b8f9a0245ece2814b57c29d47d9c9ac36836608"
+  },
+  "after": {
+    "status": "ok",
+    "revision": "fdf33f72948be553420448136537b64e35e0e3a0"
+  },
+  "originalPods": [
+    "web-594f8c5d9c-cs4vt",
+    "web-594f8c5d9c-dzqf8"
+  ],
+  "afterDeletion": [
+    "web-594f8c5d9c-dzqf8",
+    "web-594f8c5d9c-nl75g"
+  ],
+  "afterRollout": [
+    "web-c6b75ff64-9gnp4",
+    "web-c6b75ff64-xzm94"
+  ],
+  "samples": 50,
+  "seconds": 27.1,
+  "sampleErrors": [],
+  "revisionsSeen": [
+    "2b8f9a0245ece2814b57c29d47d9c9ac36836608",
+    "fdf33f72948be553420448136537b64e35e0e3a0"
+  ]
+}
