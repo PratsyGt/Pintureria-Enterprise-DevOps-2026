@@ -1,1 +1,25 @@
-{% extends 'base.html' %}{% block title %}Acceder · Pinturería Enterprise{% endblock %}{% block content %}<div class="login-layout"><section class="login-story"><a class="brand" href="{% url 'login' %}"><span class="brand-mark">P<span>.</span></span><span class="brand-copy"><strong>Pinturería</strong><small>ENTERPRISE POS</small></span></a><div><span class="eyebrow">CADA OPERACIÓN, EN SU LUGAR</span><h1>Más claridad.<br>Mejores decisiones.</h1><p>Ventas, inventario y compras conectados en un solo espacio de trabajo.</p><div class="login-features"><span>{% include 'components/icon.html' with name='cart' %} Ventas ágiles</span><span>{% include 'components/icon.html' with name='layers' %} Inventario bajo control</span><span>{% include 'components/icon.html' with name='chart' %} Información para decidir</span></div></div><small>Diseñado para el ritmo de tu negocio.</small></section><section class="login-card"><span class="eyebrow">BIENVENIDO DE NUEVO</span><h2>Inicia sesión</h2><p class="muted">Ingresa a tu espacio de trabajo.</p><form method="post" class="form-grid one" data-processing-label="Verificando…">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}{% include 'components/field.html' with field=field %}{% endfor %}<button type="button" class="text-button password-toggle" aria-controls="id_clave" aria-pressed="false">Mostrar contraseña</button><button class="btn primary" type="submit">Iniciar sesión {% include 'components/icon.html' with name='arrow' %}</button></form><p class="login-security">{% include 'components/icon.html' with name='shield' %} Acceso protegido según tu rol y permisos.</p></section></div>{% endblock %}
+{% extends 'base.html' %}{% block title %}Acceder · 
+Pinturería Enterprise{% endblock %}{% block content %}
+<div class="login-layout"><section class="login-story">
+    <a class="brand" href="{% url 'login' %}">
+        <span class="brand-mark">P<span>.</span>
+    </span><span class="brand-copy">
+        <strong>Pinturería</strong>
+        <small>ENTERPRISE POS</small></span></a><div>
+            <span class="eyebrow">CADA OPERACIÓN, EN SU LUGAR</span>
+            <h1>Más claridad.<br>Mejores decisiones.</h1><p>Ventas, inventario y compras conectados en un solo espacio de trabajo.</p>
+            
+            <div class="login-features"><span>{% include 'components/icon.html' with name='cart' %} Ventas ágiles</span>
+                <span>{% include 'components/icon.html' with name='layers' %} Inventario bajo control</span>
+                <span>{% include 'components/icon.html' with name='chart' %} Información para decidir</span>
+            </div></div><small>Diseñado para el ritmo de tu negocio.</small>
+        </section><section class="login-card"><span class="eyebrow">BIENVENIDO DE NUEVO</span>
+            <h2>Inicia sesión</h2><p class="muted">Ingresa a tu espacio de trabajo.</p>
+            <form method="post" class="form-grid one" data-processing-label="Verificando…">
+                {% csrf_token %}{{ form.non_field_errors }}
+                {% for field in form %}{% include 'components/field.html' with field=field %}{% endfor %}
+                <button type="button" class="text-button password-toggle" aria-controls="id_clave" aria-pressed="false">
+                    Mostrar contraseña</button><button class="btn primary" type="submit">Iniciar sesión 
+                        {% include 'components/icon.html' with name='arrow' %}</button></form>
+                        <p class="login-security">{% include 'components/icon.html' with name='shield' %} 
+                            Acceso protegido según tu rol y permisos.</p></section></div>{% endblock %}
