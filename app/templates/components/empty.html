@@ -1,1 +1,14 @@
-<div class="empty-state">{% include 'components/icon.html' with name='box' %}<strong>{{ title|default:'No hay resultados' }}</strong><p>{{ description|default:'Prueba con otros filtros o agrega tu primer registro.' }}</p></div>
+
+<div class="empty-state">
+
+    {% include 'components/icon.html' with name='box' %}
+
+    <strong>
+        {{ title|default:'No hay resultados' }}
+    </strong>
+
+    <p>
+        {{ description|default:'Prueba con otros filtros o agrega tu primer registro.' }}
+    </p>
+
+</div>

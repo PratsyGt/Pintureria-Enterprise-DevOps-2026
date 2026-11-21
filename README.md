@@ -1,15 +1,3 @@
-# Pinturería Enterprise POS — entrega 2026
-
-Aplicación ampliada sobre el ZIP original, con Django, HTML5, CSS/JavaScript y Microsoft SQL Server. No se cambiaron las claves primarias ni se sustituyó la arquitectura.
-
-## Estado real de la entrega Enterprise — 4 de noviembre de 2026
-
-Interfaz Enterprise POS integrada en Django: sidebar adaptable, dashboard SQL, catálogo y carrito, pagos combinados, microinteracciones accesibles, filtros/paginación SQL, historial por proveedor y reportes HTML/PDF/CSV. No se reemplazaron los procedimientos financieros ni el esquema de negocio.
-
-`manage.py check` y **38 pruebas automatizadas** pasan. Se ejecutaron los scripts 01/02/04/05/06/07/08 en una base SQL Server aislada; los siete escenarios transaccionales pasaron. Navegador Edge: venta/reintento, cotización facturada, compra parcial/completa, anulación, siete reportes, seis tamaños de pantalla y movimiento reducido. La base habitual `PintureriaDB` no recibió escrituras de estas pruebas.
-
-Consulte `MEJORAS_ENTERPRISE.md`, `MANUAL_ENTERPRISE.md` y `VALIDACION.md` para alcance, evidencia y límites. La conexión local configurada es `.\SQLEXPRESS`.
-
 ## Instalación en Windows
 
 Requiere Python 3.11 o superior, SQL Server 2022 Express, SSMS y ODBC Driver 18 for SQL Server. Desde PowerShell, dentro de esta carpeta:
@@ -121,11 +109,3 @@ Las 38 pruebas Python comprueban contratos con mocks explícitos; no se presenta
 Los listados operativos realizan búsqueda, filtros, orden y paginación en SQL Server con parámetros, columnas permitidas y desempate por ID. Los lotes parten de FechaIngreso/ID. Los filtros se conservan en la URL. El POS carga el catálogo activo al entrar y presenta 18 tarjetas por página (6 en móvil); para catálogos enormes conviene sustituir esa carga inicial por una API paginada. Los reportes exportan todos los resultados seleccionados; no se hizo una prueba de carga masiva.
 
 El límite de intentos de login usa caché local (8 intentos por usuario/IP, 5 minutos). Para varios procesos debe configurarse caché compartida. Las cuentas inactivas y cambios de contraseña invalidan la sesión al revisar permisos; cookies duran una hora. No es un sistema de factura tributaria FEL.
-
-## Archivos de entrega
-
-`MEJORAS_ENTERPRISE.md` describe esta transformación; `CAMBIOS_FINALES.md` documenta la etapa anterior. `AUDITORIA.md` conserva el diagnóstico inicial. El ZIP final excluye `.env`, entorno virtual, temporales y credenciales.
-
-## Proyecto de Redes y DevOps
-
-Para Docker, Dokploy, Kubernetes y el pipeline de publicación consulta [la guía de Redes](docs/devops/README.md).
