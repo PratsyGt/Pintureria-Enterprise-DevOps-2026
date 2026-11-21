@@ -1,43 +1,117 @@
+
 {% extends 'base.html' %}
+
 {% block title %}
-Lotes de inventario
+    Lotes de inventario
 {% endblock %}
+
 {% block content %}
+
 <section class="hero">
-<span class="section-label">Inventario</span>
-<h2>
-Lotes de {{ producto.Producto }}
-</h2>
-<p>
-SKU: {{ producto.SKU }} · {{ producto.Presentacion }}
-{% if producto.Color %}
-· {{ producto.Color }}
-{% endif %}
-</p>
+
+    <span class="section-label">Inventario</span>
+
+    <h2>
+        Lotes de {{ producto.Producto }}
+    </h2>
+
+    <p>
+        SKU: {{ producto.SKU }} · {{ producto.Presentacion }}
+
+        {% if producto.Color %}
+            · {{ producto.Color }}
+        {% endif %}
+    </p>
+
 </section>
+
 <article class="panel">
-<p>
-<a href="{% url 'inventario' %}">← Volver al inventario</a>
-</p>
-<section class="table-scroll">
-<div class="table-scroll">{% include 'components/pagination.html' %}<table data-server-list>
-<thead>
-<tr>
-<th>Lote</th><th>Ingreso</th><th>Bodega</th><th>Ubicación</th><th>Inicial</th><th>Disponible</th><th>Costo unitario</th><th>Vencimiento</th>
-</tr>
-</thead>
-<tbody>
-{% for r in rows %}
-<tr>
-<td>{{ r.CodigoLote|default:r.LoteID }}</td><td data-sort="{{ r.FechaIngreso|date:'c' }}">{{ r.FechaIngreso|date:'d/m/Y H:i' }}</td><td>{{ r.Bodega }}</td><td>{{ r.Ubicacion }}</td><td>{{ r.CantidadInicial|floatformat:3 }}</td><td>{{ r.CantidadDisponible|floatformat:3 }}</td><td>Q {{ r.CostoUnitario|floatformat:2 }}</td><td>{{ r.FechaVencimiento|date:'d/m/Y'|default:'—' }}</td>
-</tr>
-{% empty %}
-<tr>
-<td colspan="8">No hay lotes para este producto.</td>
-</tr>
-{% endfor %}
-</tbody>
-</table></div>
-</section>
+
+    <p>
+        <a href="{% url 'inventario' %}">
+            ← Volver al inventario
+        </a>
+    </p>
+
+    <section class="table-scroll">
+
+        <div class="table-scroll">
+
+            {% include 'components/pagination.html' %}
+
+            <table data-server-list>
+
+                <thead>
+                    <tr>
+                        <th>Lote</th>
+                        <th>Ingreso</th>
+                        <th>Bodega</th>
+                        <th>Ubicación</th>
+                        <th>Inicial</th>
+                        <th>Disponible</th>
+                        <th>Costo unitario</th>
+                        <th>Vencimiento</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for r in rows %}
+
+                        <tr>
+
+                            <td>
+                                {{ r.CodigoLote|default:r.LoteID }}
+                            </td>
+
+                            <td data-sort="{{ r.FechaIngreso|date:'c' }}">
+                                {{ r.FechaIngreso|date:'d/m/Y H:i' }}
+                            </td>
+
+                            <td>
+                                {{ r.Bodega }}
+                            </td>
+
+                            <td>
+                                {{ r.Ubicacion }}
+                            </td>
+
+                            <td>
+                                {{ r.CantidadInicial|floatformat:3 }}
+                            </td>
+
+                            <td>
+                                {{ r.CantidadDisponible|floatformat:3 }}
+                            </td>
+
+                            <td>
+                                Q {{ r.CostoUnitario|floatformat:2 }}
+                            </td>
+
+                            <td>
+                                {{ r.FechaVencimiento|date:'d/m/Y'|default:'—' }}
+                            </td>
+
+                        </tr>
+
+                    {% empty %}
+
+                        <tr>
+                            <td colspan="8">
+                                No hay lotes para este producto.
+                            </td>
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
 </article>
+
 {% endblock %}

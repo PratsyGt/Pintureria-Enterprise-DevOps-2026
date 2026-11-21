@@ -1,9 +1,422 @@
-{% extends 'base.html' %}{% load static l10n %}{% block title %}Punto de venta · Pinturería Enterprise{% endblock %}{% block content %}
-<header class="page-head"><div><span class="eyebrow">OPERACIONES / VENTA NUEVA</span><h1>Punto de venta</h1><p class="muted">Selecciona productos, revisa tu carrito y cobra.</p></div><div class="actions"><a class="btn" href="{% url 'facturas' %}">{% include 'components/icon.html' with name='receipt' %} Ver facturas</a><a class="btn pos-mobile-cart-link" href="#pos-cart">Ir al carrito ↓</a></div></header>
-<form method="post" id="pos-form" data-pos-form data-processing-label="Confirmando venta…">{% csrf_token %}<input type="hidden" name="checkout_token" value="{{ checkout_token }}"><input type="hidden" name="detalle_json"><input type="hidden" name="pagos_json">
-<div class="pos-layout"><section class="pos-catalog" aria-label="Catálogo de venta"><div class="pos-toolbar"><label class="search-field">{% include 'components/icon.html' with name='search' %}<input id="pos-search" type="search" placeholder="Buscar por nombre o SKU…" aria-label="Buscar productos por nombre o SKU" autocomplete="off" autofocus></label><select id="pos-category" aria-label="Filtrar categoría"><option value="">Todas las categorías</option></select><select id="pos-brand" aria-label="Filtrar marca"><option value="">Todas las marcas</option></select></div><div class="catalog-count" id="pos-count" role="status"></div><div class="product-grid" id="pos-products"></div><div class="pagination"><button type="button" class="btn small" id="products-previous">Anterior</button><span id="products-page"></span><button type="button" class="btn small" id="products-next">Siguiente</button></div><p class="hint">Alt+B enfoca el buscador. Las existencias se verifican nuevamente al cobrar.</p></section>
-<aside class="panel pos-cart" id="pos-cart" aria-label="Carrito de venta"><header class="cart-title"><h2>Venta actual <span class="badge" id="cart-count">0</span></h2><button type="button" class="text-button" id="clear-cart">Vaciar</button></header><div class="cart-meta"><div class="field"><label for="pos-client-search">Buscar cliente</label><input type="search" id="pos-client-search" placeholder="Nombre, NIT o ID" autocomplete="off"></div><div class="field"><label for="pos-client">Cliente</label><select id="pos-client" name="cliente_id" required>{% for c in clientes %}<option value="{{ c.ClienteID }}">{{ c.ClienteID }} · {{ c.Nombre }} · {{ c.NIT|default:'CF' }}</option>{% endfor %}</select></div><details {% if cotizacion_preseleccionada %}open{% endif %}><summary>Facturar una cotización</summary><div class="field"><label for="pos-quote">Cotización confirmada</label><select id="pos-quote" name="cotizacion_id"><option value="">Venta directa</option>{% for q in cotizaciones_confirmadas %}<option value="{{ q.CotizacionID }}" data-client="{{ q.ClienteID }}" data-total="{{ q.Total|unlocalize }}" {% if cotizacion_preseleccionada == q.CotizacionID|stringformat:'s' %}selected{% endif %}>#{{ q.CotizacionID }} · Q {{ q.Total|floatformat:2 }}</option>{% endfor %}</select></div></details></div>
-<div class="pos-note" id="pos-quote-note" hidden>Se conservarán los productos y precios confirmados de la cotización.</div><div id="cart-items" class="cart-items"></div><div id="cart-empty" class="cart-empty">{% include 'components/icon.html' with name='cart' %}<strong>Tu carrito está vacío</strong><p>Agrega un producto para comenzar.</p></div><div class="cart-summary"><div><span>Subtotal</span><strong id="cart-subtotal">Q 0.00</strong></div><div><span>Descuentos</span><strong id="cart-discount">Q 0.00</strong></div><div class="grand-total"><span>Total a pagar</span><strong id="cart-total">Q 0.00</strong></div></div><p class="error" id="cart-error" role="alert"></p><button type="button" class="btn primary block" id="open-checkout">Cobrar {% include 'components/icon.html' with name='arrow' %}</button><p class="checkout-hint">La venta se confirma después de guardar el cobro.</p></aside></div>
-<dialog class="modal checkout-modal" id="checkout-dialog" aria-labelledby="checkout-title"><header class="section-head"><div><span class="eyebrow">CONFIRMAR COBRO</span><h2 id="checkout-title">Completa la venta</h2></div><button type="button" class="icon-btn" id="close-checkout" aria-label="Cerrar cobro">{% include 'components/icon.html' with name='close' %}</button></header><p id="checkout-summary"></p><strong class="checkout-total" id="checkout-total">Q 0.00</strong><div id="pos-payments"></div><button type="button" class="btn small" id="pos-add-payment">+ Agregar medio de pago</button><div class="payment-balance"><span>Saldo por cubrir</span><strong id="payment-balance">Q 0.00</strong></div><p class="error" id="checkout-error" role="alert"></p><div class="form-actions"><button type="button" class="btn" id="cancel-checkout">Volver al carrito</button><button type="submit" class="btn primary" id="confirm-sale">Confirmar y emitir</button></div><p class="processing-message" id="checkout-processing" hidden role="status">Validando pago y existencias. Espera la respuesta antes de iniciar otra venta.</p></dialog></form>
-<noscript><p class="alert">El editor de venta requiere JavaScript para manejar el carrito y los pagos. Habilítalo para continuar.</p></noscript>
-{{ productos|json_script:'pos-product-data' }}{{ pagos|json_script:'pos-payment-data' }}{{ draft|json_script:'pos-draft-data' }}<script defer src="{% static 'js/pos.js' %}"></script>{% endblock %}
+
+{% extends 'base.html' %}
+{% load static l10n %}
+
+{% block title %}
+    Punto de venta · Pinturería Enterprise
+{% endblock %}
+
+{% block content %}
+
+<header class="page-head">
+
+    <div>
+        <span class="eyebrow">OPERACIONES / VENTA NUEVA</span>
+        <h1>Punto de venta</h1>
+        <p class="muted">
+            Selecciona productos, revisa tu carrito y cobra.
+        </p>
+    </div>
+
+    <div class="actions">
+
+        <a class="btn" href="{% url 'facturas' %}">
+            {% include 'components/icon.html' with name='receipt' %}
+            Ver facturas
+        </a>
+
+        <a class="btn pos-mobile-cart-link" href="#pos-cart">
+            Ir al carrito ↓
+        </a>
+
+    </div>
+
+</header>
+
+<form
+    method="post"
+    id="pos-form"
+    data-pos-form
+    data-processing-label="Confirmando venta…"
+>
+
+    {% csrf_token %}
+
+    <input
+        type="hidden"
+        name="checkout_token"
+        value="{{ checkout_token }}"
+    >
+
+    <input type="hidden" name="detalle_json">
+    <input type="hidden" name="pagos_json">
+
+    <div class="pos-layout">
+
+        <section class="pos-catalog" aria-label="Catálogo de venta">
+
+            <div class="pos-toolbar">
+
+                <label class="search-field">
+
+                    {% include 'components/icon.html' with name='search' %}
+
+                    <input
+                        id="pos-search"
+                        type="search"
+                        placeholder="Buscar por nombre o SKU…"
+                        aria-label="Buscar productos por nombre o SKU"
+                        autocomplete="off"
+                        autofocus
+                    >
+
+                </label>
+
+                <select id="pos-category" aria-label="Filtrar categoría">
+                    <option value="">Todas las categorías</option>
+                </select>
+
+                <select id="pos-brand" aria-label="Filtrar marca">
+                    <option value="">Todas las marcas</option>
+                </select>
+
+            </div>
+
+            <div
+                class="catalog-count"
+                id="pos-count"
+                role="status"
+            ></div>
+
+            <div
+                class="product-grid"
+                id="pos-products"
+            ></div>
+
+            <div class="pagination">
+
+                <button
+                    type="button"
+                    class="btn small"
+                    id="products-previous"
+                >
+                    Anterior
+                </button>
+
+                <span id="products-page"></span>
+
+                <button
+                    type="button"
+                    class="btn small"
+                    id="products-next"
+                >
+                    Siguiente
+                </button>
+
+            </div>
+
+            <p class="hint">
+                Alt+B enfoca el buscador.
+                Las existencias se verifican nuevamente al cobrar.
+            </p>
+
+        </section>
+
+        <aside
+            class="panel pos-cart"
+            id="pos-cart"
+            aria-label="Carrito de venta"
+        >
+
+            <header class="cart-title">
+
+                <h2>
+                    Venta actual
+                    <span class="badge" id="cart-count">0</span>
+                </h2>
+
+                <button
+                    type="button"
+                    class="text-button"
+                    id="clear-cart"
+                >
+                    Vaciar
+                </button>
+
+            </header>
+
+            <div class="cart-meta">
+
+                <div class="field">
+
+                    <label for="pos-client-search">
+                        Buscar cliente
+                    </label>
+
+                    <input
+                        type="search"
+                        id="pos-client-search"
+                        placeholder="Nombre, NIT o ID"
+                        autocomplete="off"
+                    >
+
+                </div>
+
+                <div class="field">
+
+                    <label for="pos-client">
+                        Cliente
+                    </label>
+
+                    <select
+                        id="pos-client"
+                        name="cliente_id"
+                        required
+                    >
+
+                        {% for c in clientes %}
+
+                            <option value="{{ c.ClienteID }}">
+                                {{ c.ClienteID }} ·
+                                {{ c.Nombre }} ·
+                                {{ c.NIT|default:'CF' }}
+                            </option>
+
+                        {% endfor %}
+
+                    </select>
+
+                </div>
+
+                <details {% if cotizacion_preseleccionada %}open{% endif %}>
+
+                    <summary>
+                        Facturar una cotización
+                    </summary>
+
+                    <div class="field">
+
+                        <label for="pos-quote">
+                            Cotización confirmada
+                        </label>
+
+                        <select
+                            id="pos-quote"
+                            name="cotizacion_id"
+                        >
+
+                            <option value="">
+                                Venta directa
+                            </option>
+
+                            {% for q in cotizaciones_confirmadas %}
+
+                                <option
+                                    value="{{ q.CotizacionID }}"
+                                    data-client="{{ q.ClienteID }}"
+                                    data-total="{{ q.Total|unlocalize }}"
+                                    {% if cotizacion_preseleccionada == q.CotizacionID|stringformat:'s' %}selected{% endif %}
+                                >
+                                    #{{ q.CotizacionID }} ·
+                                    Q {{ q.Total|floatformat:2 }}
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+                </details>
+
+            </div>
+
+            <div
+                class="pos-note"
+                id="pos-quote-note"
+                hidden
+            >
+                Se conservarán los productos y precios
+                confirmados de la cotización.
+            </div>
+
+            <div
+                id="cart-items"
+                class="cart-items"
+            ></div>
+
+            <div
+                id="cart-empty"
+                class="cart-empty"
+            >
+
+                {% include 'components/icon.html' with name='cart' %}
+
+                <strong>
+                    Tu carrito está vacío
+                </strong>
+
+                <p>
+                    Agrega un producto para comenzar.
+                </p>
+
+            </div>
+
+            <div class="cart-summary">
+
+                <div>
+                    <span>Subtotal</span>
+                    <strong id="cart-subtotal">Q 0.00</strong>
+                </div>
+
+                <div>
+                    <span>Descuentos</span>
+                    <strong id="cart-discount">Q 0.00</strong>
+                </div>
+
+                <div class="grand-total">
+                    <span>Total a pagar</span>
+                    <strong id="cart-total">Q 0.00</strong>
+                </div>
+
+            </div>
+
+            <p
+                class="error"
+                id="cart-error"
+                role="alert"
+            ></p>
+
+            <button
+                type="button"
+                class="btn primary block"
+                id="open-checkout"
+            >
+                Cobrar
+                {% include 'components/icon.html' with name='arrow' %}
+            </button>
+
+            <p class="checkout-hint">
+                La venta se confirma después de guardar el cobro.
+            </p>
+
+        </aside>
+
+    </div>
+
+    <dialog
+        class="modal checkout-modal"
+        id="checkout-dialog"
+        aria-labelledby="checkout-title"
+    >
+
+        <header class="section-head">
+
+            <div>
+                <span class="eyebrow">
+                    CONFIRMAR COBRO
+                </span>
+
+                <h2 id="checkout-title">
+                    Completa la venta
+                </h2>
+            </div>
+
+            <button
+                type="button"
+                class="icon-btn"
+                id="close-checkout"
+                aria-label="Cerrar cobro"
+            >
+                {% include 'components/icon.html' with name='close' %}
+            </button>
+
+        </header>
+
+        <p id="checkout-summary"></p>
+
+        <strong
+            class="checkout-total"
+            id="checkout-total"
+        >
+            Q 0.00
+        </strong>
+
+        <div id="pos-payments"></div>
+
+        <button
+            type="button"
+            class="btn small"
+            id="pos-add-payment"
+        >
+            + Agregar medio de pago
+        </button>
+
+        <div class="payment-balance">
+
+            <span>
+                Saldo por cubrir
+            </span>
+
+            <strong id="payment-balance">
+                Q 0.00
+            </strong>
+
+        </div>
+
+        <p
+            class="error"
+            id="checkout-error"
+            role="alert"
+        ></p>
+
+        <div class="form-actions">
+
+            <button
+                type="button"
+                class="btn"
+                id="cancel-checkout"
+            >
+                Volver al carrito
+            </button>
+
+            <button
+                type="submit"
+                class="btn primary"
+                id="confirm-sale"
+            >
+                Confirmar y emitir
+            </button>
+
+        </div>
+
+        <p
+            class="processing-message"
+            id="checkout-processing"
+            hidden
+            role="status"
+        >
+            Validando pago y existencias.
+            Espera la respuesta antes de iniciar otra venta.
+        </p>
+
+    </dialog>
+
+</form>
+
+<noscript>
+    <p class="alert">
+        El editor de venta requiere JavaScript para manejar
+        el carrito y los pagos. Habilítalo para continuar.
+    </p>
+</noscript>
+
+{{ productos|json_script:'pos-product-data' }}
+
+{{ pagos|json_script:'pos-payment-data' }}
+
+{{ draft|json_script:'pos-draft-data' }}
+
+<script defer src="{% static 'js/pos.js' %}"></script>
+
+{% endblock %}

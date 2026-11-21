@@ -1,6 +1,148 @@
-{% extends 'base.html' %}{% block content %}
-<header class="page-head"><div><span class="section-label">Control de ventas</span><h1>Anular factura</h1><p class="muted">Consulta el documento antes de confirmar.</p></div></header>
-<form method="get" class="panel"><label for="numero">Número de factura</label><input id="numero" name="numero" maxlength="40" value="{{ numero }}" required><button class="btn">Buscar</button></form>
-{% if f %}<section class="panel"><h2>{{ f.NumeroFactura }} · {{ f.Estado }}</h2><p>{{ f.Cliente }} · {{ f.FechaFactura }} · Emitida por {{ f.Empleado }}</p><h3>Total vigente: Q {{ f.Total|floatformat:2 }}</h3><div class="table-wrap"><div class="table-scroll"><table><thead><tr><th>Producto</th><th>Presentación</th><th>Cantidad</th><th>Importe original</th></tr></thead><tbody>{% for d in detalle %}<tr><td>{{ d.Producto }} / {{ d.SKU }}</td><td>{{ d.Presentacion }}</td><td>{{ d.Cantidad }}</td><td>Q {{ d.Importe|floatformat:2 }}</td></tr>{% endfor %}</tbody></table></div></div><p>Los pagos originales y el detalle se conservarán para auditoría. Se reintegrará únicamente el saldo que no haya sido devuelto.</p></section>
-{% if f.Estado == 'EMITIDA' %}<form method="post" class="panel form-grid" data-confirm="¿Anular definitivamente esta factura?">{% csrf_token %}{{ form.non_field_errors }}{% for field in form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}<div class="form-actions"><button class="btn danger">Confirmar anulación</button></div></form>{% else %}<p class="alert">Esta factura ya fue anulada.</p>{% endif %}{% endif %}
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<header class="page-head">
+    <div>
+        <span class="section-label">Control de ventas</span>
+        <h1>Anular factura</h1>
+        <p class="muted">
+            Consulta el documento antes de confirmar.
+        </p>
+    </div>
+</header>
+
+<form method="get" class="panel">
+
+    <label for="numero">
+        Número de factura
+    </label>
+
+    <input
+        id="numero"
+        name="numero"
+        maxlength="40"
+        value="{{ numero }}"
+        required
+    >
+
+    <button class="btn">
+        Buscar
+    </button>
+
+</form>
+
+{% if f %}
+
+    <section class="panel">
+
+        <h2>
+            {{ f.NumeroFactura }} · {{ f.Estado }}
+        </h2>
+
+        <p>
+            {{ f.Cliente }} · {{ f.FechaFactura }} ·
+            Emitida por {{ f.Empleado }}
+        </p>
+
+        <h3>
+            Total vigente: Q {{ f.Total|floatformat:2 }}
+        </h3>
+
+        <div class="table-wrap">
+            <div class="table-scroll">
+
+                <table>
+
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Presentación</th>
+                            <th>Cantidad</th>
+                            <th>Importe original</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for d in detalle %}
+                            <tr>
+                                <td>
+                                    {{ d.Producto }} / {{ d.SKU }}
+                                </td>
+
+                                <td>
+                                    {{ d.Presentacion }}
+                                </td>
+
+                                <td>
+                                    {{ d.Cantidad }}
+                                </td>
+
+                                <td>
+                                    Q {{ d.Importe|floatformat:2 }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+
+        <p>
+            Los pagos originales y el detalle se conservarán
+            para auditoría. Se reintegrará únicamente el saldo
+            que no haya sido devuelto.
+        </p>
+
+    </section>
+
+    {% if f.Estado == 'EMITIDA' %}
+
+        <form
+            method="post"
+            class="panel form-grid"
+            data-confirm="¿Anular definitivamente esta factura?"
+        >
+
+            {% csrf_token %}
+
+            {{ form.non_field_errors }}
+
+            {% for field in form %}
+
+                <div class="field">
+
+                    {{ field.label_tag }}
+
+                    {{ field }}
+
+                    {{ field.errors }}
+
+                </div>
+
+            {% endfor %}
+
+            <div class="form-actions">
+
+                <button class="btn danger">
+                    Confirmar anulación
+                </button>
+
+            </div>
+
+        </form>
+
+    {% else %}
+
+        <p class="alert">
+            Esta factura ya fue anulada.
+        </p>
+
+    {% endif %}
+
+{% endif %}
+
 {% endblock %}

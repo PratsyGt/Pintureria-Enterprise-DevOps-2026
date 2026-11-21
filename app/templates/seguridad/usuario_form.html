@@ -1,77 +1,163 @@
+
 {% extends 'base.html' %}
+
 {% block title %}
-{{ titulo }}
+    {{ titulo }}
 {% endblock %}
+
 {% block content %}
+
 <header class="page-head">
-<div>
-<h1>
-{{ titulo }}
-</h1>
-<p class="muted">
-Completa la información del usuario.
-</p>
-</div>
+
+    <div>
+
+        <h1>{{ titulo }}</h1>
+
+        <p class="muted">
+            Completa la información del usuario.
+        </p>
+
+    </div>
+
 </header>
+
 <form method="post" class="panel form-grid">
-{% csrf_token %}
-{% for field in form %}
-{% if not field.is_hidden %}
-<div class="field
-{% if field.name == 'activo' %}
-check
-{% endif %}
-">
-<label>
-  {{ field.label }}</label>{{ field }}
-{% if field.help_text %}
-<small>{{ field.help_text }}
-  </small>
-{% endif %}
-{% for e in field.errors %}
-<small class="error">{{ e }}</small>
-{% endfor %}
-</div>
-{% else %}
-{{ field }}
-{% endif %}
-{% endfor %}
-<div class="field" style="grid-column:1/-1">
-<label><input type="checkbox" name="personalizar_permisos" {% if titulo == "Editar usuario" %}checked{% endif %}> Personalizar permisos (desmarcado: permisos del rol)</label>
-<h3>
-Permisos del usuario
-</h3>
-<p class="muted">
-Seleccione qué módulos podrá consultar o administrar. Los gerentes tienen acceso completo.
-</p>
-<div class="table-scroll"><table>
-<thead>
-<tr>
-<th>Módulo</th><th>Consultar</th><th>Crear y modificar</th>
-</tr>
-</thead>
-<tbody>
-{% for key, label, ver, editar in modulos %}
-<tr>
-<td>{{ label }}</td>
-<td><input type="checkbox" name="ver_{{ key }}"
-{% if ver %}
-checked
-{% endif %}
-></td>
-<td><input type="checkbox" name="editar_{{ key }}"
-{% if editar %}
-checked
-{% endif %}
-></td>
-</tr>
-{% endfor %}
-</tbody>
-</table></div>
-</div>
-<div class="form-actions">
-<a class="btn" href="{% url 'usuarios_list' %}">Cancelar
-</a><button class="btn primary" type="submit">Guardar</button>
-</div>
+
+    {% csrf_token %}
+
+    {% for field in form %}
+
+        {% if not field.is_hidden %}
+
+            <div class="field {% if field.name == 'activo' %}check{% endif %}">
+
+                <label>
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+
+                    <small>
+                        {{ field.help_text }}
+                    </small>
+
+                {% endif %}
+
+                {% for e in field.errors %}
+
+                    <small class="error">
+                        {{ e }}
+                    </small>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            {{ field }}
+
+        {% endif %}
+
+    {% endfor %}
+
+    <div class="field" style="grid-column:1/-1">
+
+        <label>
+
+            <input
+                type="checkbox"
+                name="personalizar_permisos"
+                {% if titulo == "Editar usuario" %}checked{% endif %}
+            >
+
+            Personalizar permisos (desmarcado: permisos del rol)
+
+        </label>
+
+        <h3>
+            Permisos del usuario
+        </h3>
+
+        <p class="muted">
+            Seleccione qué módulos podrá consultar o administrar.
+            Los gerentes tienen acceso completo.
+        </p>
+
+        <div class="table-scroll">
+
+            <table>
+
+                <thead>
+                    <tr>
+                        <th>Módulo</th>
+                        <th>Consultar</th>
+                        <th>Crear y modificar</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for key, label, ver, editar in modulos %}
+
+                        <tr>
+
+                            <td>
+                                {{ label }}
+                            </td>
+
+                            <td>
+
+                                <input
+                                    type="checkbox"
+                                    name="ver_{{ key }}"
+                                    {% if ver %}checked{% endif %}
+                                >
+
+                            </td>
+
+                            <td>
+
+                                <input
+                                    type="checkbox"
+                                    name="editar_{{ key }}"
+                                    {% if editar %}checked{% endif %}
+                                >
+
+                            </td>
+
+                        </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <div class="form-actions">
+
+        <a
+            class="btn"
+            href="{% url 'usuarios_list' %}"
+        >
+            Cancelar
+        </a>
+
+        <button
+            class="btn primary"
+            type="submit"
+        >
+            Guardar
+        </button>
+
+    </div>
+
 </form>
+
 {% endblock %}

@@ -1,99 +1,482 @@
 {% extends 'base.html' %}
 {% load static l10n %}
-{% block title %}Resumen comercial · Pinturería Enterprise{% endblock %}
-{% block dashboard_assets %}<script defer src="{% static 'js/dashboard.js' %}?v=rail1"></script>
-<script defer src="{% static 'js/dashboard-motion.js' %}?v=module-entry"></script>
-<noscript><style>.executive [data-pane][hidden]{display:block!important}.executive .switches{display:none}.executive [data-pane]+[data-pane]{margin-top:1rem}</style></noscript>{% endblock %}
+{% block title %}
+    Resumen comercial · Pinturería Enterprise
+{% endblock %}
+{% block dashboard_assets %}
+    <script defer src="{% static 'js/dashboard.js' %}?v=rail1">
+    </script>
+    <script defer src="{% static 'js/dashboard-motion.js' %}?v=module-entry">
+    </script>
+    <noscript>
+        <style>
+            .executive [data-pane][hidden]{display:block!important}.executive .switches{display:none}.executive [data-pane]+[data-pane]{margin-top:1rem}
+        </style>
+    </noscript>
+{% endblock %}
 {% block content %}
-<div class="executive">
-  <noscript><details><summary>Módulos disponibles</summary><nav>{% for group in navigation %}{% for item in group.links %}<p><a href="{{ item.url }}">{{ item.label }}</a></p>{% endfor %}{% endfor %}</nav></details></noscript>
-  <header class="welcome">
-    <div><div class="welcome-date">{% now 'l, j \d\e F \d\e Y' %}</div>
-      <h1>Hola, {{ usuario_sesion.nombre }}.</h1>
-      <p>{% if dashboard.financial %}Tu ticket promedio en este período es <strong>Q {{ dashboard.ticket|floatformat:"2u" }}</strong>.{% elif dashboard.kpis %}Consulta los pendientes de tu operación.{% else %}Accede a tus módulos desde el menú.{% endif %}</p>
-    </div>
-    <div class="shortcuts">
-      {% if permisos.cotizaciones.editar %}<a href="{% url 'cotizacion_nueva' %}"><img src="{% static 'img/accion-cotizar.svg' %}" width="100" height="76" alt=""><span>Cotizar</span></a>{% endif %}
-      {% if permisos.compras.editar %}<a href="{% url 'compra_nueva' %}"><img src="{% static 'img/accion-comprar.svg' %}" width="100" height="76" alt=""><span>Comprar</span></a>{% endif %}
-      {% if permisos.inventario.ver %}<a href="{% url 'inventario' %}"><img src="{% static 'img/accion-inventario.svg' %}" width="100" height="76" alt=""><span>Inventario</span></a>{% endif %}
-      {% if permisos.reportes.ver %}<a href="{% url 'reportes' %}"><img src="{% static 'img/accion-reportes.svg' %}" width="100" height="76" alt=""><span>Reportes</span></a>{% endif %}
-    </div>
-  </header>
-
-  <div class="overview-head"><h2>Resumen comercial</h2>
-    <details class="period-picker" {% if period_form.errors %}open{% endif %}><summary>{% include 'components/icon.html' with name='grid' %} {{ period.desde|date:'d M' }} – {{ period.hasta|date:'d M, Y' }} ▾</summary>
-      <form method="get" class="date-filter" data-page-filter>
-        {{ period_form.non_field_errors }}
-        {% for field in period_form %}<div class="field">{{ field.label_tag }}{{ field }}{{ field.errors }}</div>{% endfor %}
-        <button class="btn primary">Aplicar período</button>
-      </form>
-    </details>
-  </div>
-
-  <section class="metric-grid" aria-label="Indicadores">
-    {% for kpi in dashboard.kpis %}
-      <article class="metric kpi-card" style="--stagger:{{ forloop.counter0 }}">
-        <div class="metric-name"><i>{% include 'components/icon.html' with name=kpi.icon %}</i>{{ kpi.label }}</div>
-        <strong data-counter="{{ kpi.value|unlocalize }}" {% if kpi.money %}data-money{% endif %}>{% if kpi.money %}Q {% endif %}{% if kpi.money %}{{ kpi.value|floatformat:"2u" }}{% else %}{{ kpi.value }}{% endif %}</strong>
-        <small>{{ kpi.note }}</small>
-        {% if kpi.delta != None %}<small class="delta" title="{{ kpi.comparison }}">{{ kpi.delta|floatformat:1 }} % {{ kpi.comparison }}</small>{% endif %}
-      </article>
-    {% endfor %}
-  </section>
-
-  {% if dashboard.financial %}
-  <div class="insights">
-    <section class="sheet" data-switcher aria-label="Evolución de ventas">
-      <header><div><span class="sheet-label">Facturación vigente</span><h2>Evolución de ventas</h2></div>
-        <div class="switches">{% for graph in dashboard.trends %}<button type="button" data-view="{{ forloop.counter }}" aria-pressed="{{ forloop.first|yesno:'true,false' }}">{{ graph.title }}</button>{% endfor %}</div>
-      </header>
-      {% for graph in dashboard.trends %}
-      <div data-pane="{{ forloop.counter }}" {% if not forloop.first %}hidden{% endif %}>
-        <strong class="chart-total">Q {{ graph.total|floatformat:"2u" }}</strong>
-        <noscript><h3>{{ graph.title }}</h3></noscript><div class="plot">
-          <svg viewBox="0 0 620 158" role="group" aria-label="Ventas en quetzales, {{ graph.title }}">
-            <path class="guide" d="M18 19H602 M18 60H602 M18 101H602 M18 142H602"/>
-            {% if graph.title == 'Mensual' %}
-            {% for pt in graph.points %}<line x1="{{ pt.x }}" x2="{{ pt.x }}" y1="142" y2="{{ pt.y }}" stroke="#b69bdc" stroke-width="15" data-tip="{{ pt.label }} · Q {{ pt.value|floatformat:'2u' }}"/>{% endfor %}
-            {% elif graph.points|length > 1 %}{% with last=graph.points|last %}<polygon class="area" points="18,142 {{ graph.line }} {{ last.x }},142"/>{% endwith %}
-            <polyline class="curve" pathLength="1" points="{{ graph.line }}"/>{% endif %}
-            {% for pt in graph.points %}<circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="{% if graph.points|length > 40 %}2{% else %}4{% endif %}" tabindex="{% if graph.points|length > 31 %}-1{% else %}0{% endif %}" data-tip="{{ pt.label }} · Q {{ pt.value|floatformat:"2u" }}" aria-label="{{ pt.label }} · Q {{ pt.value|floatformat:"2u" }}"><title>{{ pt.label }} · Q {{ pt.value|floatformat:"2u" }}</title></circle>{% endfor %}
-          </svg>
-          <div class="axis"><span>{{ graph.points.0.label }}</span><span>● Ventas (Q)</span><span>{% with last=graph.points|last %}{{ last.label }}{% endwith %}</span></div>
+    <div class="executive">
+        <noscript>
+            <details>
+                <summary>
+                    Módulos disponibles
+                </summary>
+                <nav>
+                    {% for group in navigation %}
+                        {% for item in group.links %}
+                            <p>
+                                <a href="{{ item.url }}">
+                                    {{ item.label }}
+                                </a>
+                            </p>
+                        {% endfor %}
+                    {% endfor %}
+                </nav>
+            </details>
+        </noscript>
+        <header class="welcome">
+            <div>
+                <div class="welcome-date">
+                    {% now 'l, j \d\e F \d\e Y' %}
+                </div>
+                <h1>
+                    Hola,
+                    {{ usuario_sesion.nombre }}
+                    .
+                </h1>
+                <p>
+                    {% if dashboard.financial %}
+                        Tu ticket promedio en este período es
+                        <strong>
+                            Q
+                            {{ dashboard.ticket|floatformat:"2u" }}
+                        </strong>
+                        .
+                    {% elif dashboard.kpis %}
+                        Consulta los pendientes de tu operación.
+                    {% else %}
+                        Accede a tus módulos desde el menú.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="shortcuts">
+                {% if permisos.cotizaciones.editar %}
+                    <a href="{% url 'cotizacion_nueva' %}">
+                        <img src="{% static 'img/accion-cotizar.svg' %}" width="100" height="76" alt="">
+                        <span>
+                            Cotizar
+                        </span>
+                    </a>
+                {% endif %}
+                {% if permisos.compras.editar %}
+                    <a href="{% url 'compra_nueva' %}">
+                        <img src="{% static 'img/accion-comprar.svg' %}" width="100" height="76" alt="">
+                        <span>
+                            Comprar
+                        </span>
+                    </a>
+                {% endif %}
+                {% if permisos.inventario.ver %}
+                    <a href="{% url 'inventario' %}">
+                        <img src="{% static 'img/accion-inventario.svg' %}" width="100" height="76" alt="">
+                        <span>
+                            Inventario
+                        </span>
+                    </a>
+                {% endif %}
+                {% if permisos.reportes.ver %}
+                    <a href="{% url 'reportes' %}">
+                        <img src="{% static 'img/accion-reportes.svg' %}" width="100" height="76" alt="">
+                        <span>
+                            Reportes
+                        </span>
+                    </a>
+                {% endif %}
+            </div>
+        </header>
+        <div class="overview-head">
+            <h2>
+                Resumen comercial
+            </h2>
+            <details class="period-picker" {% if period_form.errors %}open{% endif %}>
+                <summary>
+                    {% include 'components/icon.html' with name='grid' %}
+                    {{ period.desde|date:'d M' }}
+                    –
+                    {{ period.hasta|date:'d M, Y' }}
+                    ▾
+                </summary>
+                <form method="get" class="date-filter" data-page-filter>
+                    {{ period_form.non_field_errors }}
+                    {% for field in period_form %}
+                        <div class="field">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {{ field.errors }}
+                        </div>
+                    {% endfor %}
+                    <button class="btn primary">
+                        Aplicar período
+                    </button>
+                </form>
+            </details>
         </div>
-        <details class="chart-data"><summary>Consultar cifras</summary><div class="table-scroll"><table><thead><tr><th>Fecha</th><th>Ventas (Q)</th></tr></thead><tbody>{% for pt in graph.points %}<tr><td>{{ pt.label }}</td><td>{{ pt.value|floatformat:"2u" }}</td></tr>{% endfor %}</tbody></table></div></details>
-      </div>
-      {% endfor %}
-    </section>
-
-    <section class="sheet"><header><div><span class="sheet-label">Cobros del período</span><h2>Medios de pago</h2></div>{% include 'components/icon.html' with name='receipt' %}</header>
-      <div class="pay-layout">
-        <div class="donut">
-          <svg viewBox="0 0 120 120" aria-label="Participación en los cobros" role="group"><circle class="ring-base" cx="60" cy="60" r="48"/>
-          {% for row in dashboard.payments %}<circle class="ring-piece" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="{{ row.share|unlocalize }} 100" stroke-dashoffset="-{{ row.offset|unlocalize }}" style="--mark:{{ row.color }};--share:{{ row.share|unlocalize }}" tabindex="0" data-tip="{{ row.Nombre }} · {{ row.share|floatformat:1 }} %"><title>{{ row.Nombre }} · Q {{ row.Total|floatformat:"2u" }}</title></circle>{% endfor %}</svg>
-          <div><small>Cobrado</small><b>Q {{ dashboard.paid|floatformat:"2u" }}</b></div>
+        <section class="metric-grid" aria-label="Indicadores">
+            {% for kpi in dashboard.kpis %}
+                <article class="metric kpi-card" style="--stagger:{{ forloop.counter0 }}">
+                    <div class="metric-name">
+                        <i>
+                            {% include 'components/icon.html' with name=kpi.icon %}
+                        </i>
+                        {{ kpi.label }}
+                    </div>
+                    <strong data-counter="{{ kpi.value|unlocalize }}" {% if kpi.money %}data-money{% endif %}>
+                        {% if kpi.money %}
+                            Q
+                        {% endif %}
+                        {% if kpi.money %}
+                            {{ kpi.value|floatformat:"2u" }}
+                        {% else %}
+                            {{ kpi.value }}
+                        {% endif %}
+                    </strong>
+                    <small>
+                        {{ kpi.note }}
+                    </small>
+                    {% if kpi.delta != None %}
+                        <small class="delta" title="{{ kpi.comparison }}">
+                            {{ kpi.delta|floatformat:1 }}
+                            %
+                            {{ kpi.comparison }}
+                        </small>
+                    {% endif %}
+                </article>
+            {% endfor %}
+        </section>
+        {% if dashboard.financial %}
+            <div class="insights">
+                <section class="sheet" data-switcher aria-label="Evolución de ventas">
+                    <header>
+                        <div>
+                            <span class="sheet-label">
+                                Facturación vigente
+                            </span>
+                            <h2>
+                                Evolución de ventas
+                            </h2>
+                        </div>
+                        <div class="switches">
+                            {% for graph in dashboard.trends %}
+                                <button type="button" data-view="{{ forloop.counter }}" aria-pressed="{{ forloop.first|yesno:'true,false' }}">
+                                    {{ graph.title }}
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </header>
+                    {% for graph in dashboard.trends %}
+                        <div data-pane="{{ forloop.counter }}" {% if not forloop.first %}hidden{% endif %}>
+                            <strong class="chart-total">
+                                Q
+                                {{ graph.total|floatformat:"2u" }}
+                            </strong>
+                            <noscript>
+                                <h3>
+                                    {{ graph.title }}
+                                </h3>
+                            </noscript>
+                            <div class="plot">
+                                <svg viewBox="0 0 620 158" role="group" aria-label="Ventas en quetzales, {{ graph.title }}">
+                                    <path class="guide" d="M18 19H602 M18 60H602 M18 101H602 M18 142H602"/>
+                                    {% if graph.title == 'Mensual' %}
+                                        {% for pt in graph.points %}
+                                            <line x1="{{ pt.x }}" x2="{{ pt.x }}" y1="142" y2="{{ pt.y }}" stroke="#b69bdc" stroke-width="15" data-tip="{{ pt.label }} · Q {{ pt.value|floatformat:'2u' }}"/>
+                                        {% endfor %}
+                                    {% elif graph.points|length > 1 %}
+                                        {% with last=graph.points|last %}
+                                            <polygon class="area" points="18,142 {{ graph.line }} {{ last.x }},142"/>
+                                        {% endwith %}
+                                        <polyline class="curve" pathLength="1" points="{{ graph.line }}"/>
+                                    {% endif %}
+                                    {% for pt in graph.points %}
+                                        <circle cx="{{ pt.x }}" cy="{{ pt.y }}" r="{% if graph.points|length >
+                                        40 %}2
+                                    {% else %}
+                                        4
+                                    {% endif %}
+                                    " tabindex="
+                                    {% if graph.points|length > 31 %}
+                                        -1
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                    " data-tip="
+                                    {{ pt.label }}
+                                    · Q
+                                    {{ pt.value|floatformat:"2u" }}
+                                    " aria-label="
+                                    {{ pt.label }}
+                                    · Q
+                                    {{ pt.value|floatformat:"2u" }}
+                                    ">
+                                    <title>
+                                        {{ pt.label }}
+                                        · Q
+                                        {{ pt.value|floatformat:"2u" }}
+                                    </title>
+                                </circle>
+                            {% endfor %}
+                        </svg>
+                        <div class="axis">
+                            <span>
+                                {{ graph.points.0.label }}
+                            </span>
+                            <span>
+                                ● Ventas (Q)
+                            </span>
+                            <span>
+                                {% with last=graph.points|last %}
+                                    {{ last.label }}
+                                {% endwith %}
+                            </span>
+                        </div>
+                    </div>
+                    <details class="chart-data">
+                        <summary>
+                            Consultar cifras
+                        </summary>
+                        <div class="table-scroll">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            Fecha
+                                        </th>
+                                        <th>
+                                            Ventas (Q)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pt in graph.points %}
+                                        <tr>
+                                            <td>
+                                                {{ pt.label }}
+                                            </td>
+                                            <td>
+                                                {{ pt.value|floatformat:"2u" }}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                </div>
+            {% endfor %}
+        </section>
+        <section class="sheet">
+            <header>
+                <div>
+                    <span class="sheet-label">
+                        Cobros del período
+                    </span>
+                    <h2>
+                        Medios de pago
+                    </h2>
+                </div>
+                {% include 'components/icon.html' with name='receipt' %}
+            </header>
+            <div class="pay-layout">
+                <div class="donut">
+                    <svg viewBox="0 0 120 120" aria-label="Participación en los cobros" role="group">
+                        <circle class="ring-base" cx="60" cy="60" r="48"/>
+                        {% for row in dashboard.payments %}
+                            <circle class="ring-piece" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="{{ row.share|unlocalize }} 100" stroke-dashoffset="-{{ row.offset|unlocalize }}" style="--mark:{{ row.color }};--share:{{ row.share|unlocalize }}" tabindex="0" data-tip="{{ row.Nombre }} · {{ row.share|floatformat:1 }} %">
+                            <title>
+                                {{ row.Nombre }}
+                                · Q
+                                {{ row.Total|floatformat:"2u" }}
+                            </title>
+                        </circle>
+                    {% endfor %}
+                </svg>
+                <div>
+                    <small>
+                        Cobrado
+                    </small>
+                    <b>
+                        Q
+                        {{ dashboard.paid|floatformat:"2u" }}
+                    </b>
+                </div>
+            </div>
+            <div class="pay-legend">
+                {% for row in dashboard.payments %}
+                    <div tabindex="0" data-tip="{{ row.share|floatformat:1 }} % de los cobros">
+                        <i style="--mark:{{ row.color }}">
+                        </i>
+                        <span>
+                            {{ row.Nombre|capfirst }}
+                        </span>
+                        <b>
+                            Q
+                            {{ row.Total|floatformat:"2u" }}
+                        </b>
+                    </div>
+                {% empty %}
+                    <p class="muted">
+                        Sin cobros en el período.
+                    </p>
+                {% endfor %}
+            </div>
         </div>
-        <div class="pay-legend">{% for row in dashboard.payments %}<div tabindex="0" data-tip="{{ row.share|floatformat:1 }} % de los cobros"><i style="--mark:{{ row.color }}"></i><span>{{ row.Nombre|capfirst }}</span><b>Q {{ row.Total|floatformat:"2u" }}</b></div>{% empty %}<p class="muted">Sin cobros en el período.</p>{% endfor %}</div>
-      </div>
     </section>
-  </div>
-  {% endif %}
-
-  <div class="secondary">
-    {% if dashboard.financial %}<section class="sheet" data-switcher><header><h2>Productos más vendidos</h2><div class="switches">{% for rank in dashboard.rankings %}<button type="button" data-view="{{ forloop.counter }}" aria-pressed="{{ forloop.first|yesno:'true,false' }}">{{ rank.title }}</button>{% endfor %}</div></header>
-      {% for rank in dashboard.rankings %}<div data-pane="{{ forloop.counter }}" {% if not forloop.first %}hidden{% endif %}>{% for row in rank.rows %}<div class="rank" tabindex="0" data-tip="{{ row.label }} · {{ row.value }} {{ rank.title }}"><span>{{ row.label }}</span><b>{% if rank.title == 'Ingresos' %}Q {% endif %}{{ row.value }}</b><i><em style="width:{{ row.width|unlocalize }}%"></em></i></div>{% empty %}<p class="muted">Sin ventas en el período.</p>{% endfor %}</div>{% endfor %}
-    </section>{% endif %}
-    {% if dashboard.inventory %}<section class="sheet"><header><h2>Estado del inventario</h2><a href="{% url 'inventario' %}">Ver existencias ↗</a></header>
-      {% if dashboard.active_products != None %}<p>{{ dashboard.active_products }} productos activos</p>{% endif %}
-      <div class="stock-band">{% for name,count in dashboard.inventory %}{% if count %}<i style="flex:{{ count }}" data-stock="{{ name }}" tabindex="0" data-tip="{{ name }} · {{ count }} variantes"></i>{% endif %}{% endfor %}</div>
-      <div class="stock-legend">{% for name,count in dashboard.inventory %}<div><i data-stock="{{ name }}"></i>{{ name }} <b>{{ count }}</b></div>{% endfor %}</div>
-      <details class="stock-alerts" open><summary>Alertas de agotados</summary>{% for item in dashboard.alerts %}<a href="{% url 'inventario_lotes' %}?variante={{ item.VarianteID }}">{{ item.Producto }} · {{ item.SKU }} ↗</a>{% empty %}<small>No hay variantes agotadas.</small>{% endfor %}</details>
-    </section>{% endif %}
-  </div>
-
-  {% if dashboard.activity %}<h2 class="activity-title">Actividad reciente</h2><section class="activity-grid">{% for group in dashboard.activity %}
-    <article class="sheet"><header><h3>{{ group.label }}</h3><a href="{{ group.url }}">Ver todo ↗</a></header>
-      {% for row in group.rows %}<a href="{{ row.url }}" class="activity-row"><i class="activity-symbol">{% include 'components/icon.html' with name=group.icon %}</i><div><strong>{{ row.Referencia }}</strong><small>{{ row.Fecha|date:'d M · H:i' }}</small></div><span class="badge">{{ row.Estado }}</span>{% if row.Total != None %}<strong>Q {{ row.Total|floatformat:"2u" }}</strong>{% endif %}</a>{% empty %}<p class="muted">Sin registros recientes.</p>{% endfor %}
-    </article>{% endfor %}</section>{% endif %}
+</div>
+{% endif %}
+<div class="secondary">
+    {% if dashboard.financial %}
+        <section class="sheet" data-switcher>
+            <header>
+                <h2>
+                    Productos más vendidos
+                </h2>
+                <div class="switches">
+                    {% for rank in dashboard.rankings %}
+                        <button type="button" data-view="{{ forloop.counter }}" aria-pressed="{{ forloop.first|yesno:'true,false' }}">
+                            {{ rank.title }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </header>
+            {% for rank in dashboard.rankings %}
+                <div data-pane="{{ forloop.counter }}" {% if not forloop.first %}hidden{% endif %}>
+                    {% for row in rank.rows %}
+                        <div class="rank" tabindex="0" data-tip="{{ row.label }} · {{ row.value }} {{ rank.title }}">
+                            <span>
+                                {{ row.label }}
+                            </span>
+                            <b>
+                                {% if rank.title == 'Ingresos' %}
+                                    Q
+                                {% endif %}
+                                {{ row.value }}
+                            </b>
+                            <i>
+                                <em style="width:{{ row.width|unlocalize }}%">
+                                </em>
+                            </i>
+                        </div>
+                    {% empty %}
+                        <p class="muted">
+                            Sin ventas en el período.
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </section>
+    {% endif %}
+    {% if dashboard.inventory %}
+        <section class="sheet">
+            <header>
+                <h2>
+                    Estado del inventario
+                </h2>
+                <a href="{% url 'inventario' %}">
+                    Ver existencias ↗
+                </a>
+            </header>
+            {% if dashboard.active_products != None %}
+                <p>
+                    {{ dashboard.active_products }}
+                    productos activos
+                </p>
+            {% endif %}
+            <div class="stock-band">
+                {% for name,count in dashboard.inventory %}
+                    {% if count %}
+                        <i style="flex:{{ count }}" data-stock="{{ name }}" tabindex="0" data-tip="{{ name }} · {{ count }} variantes">
+                        </i>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="stock-legend">
+                {% for name,count in dashboard.inventory %}
+                    <div>
+                        <i data-stock="{{ name }}">
+                        </i>
+                        {{ name }}
+                        <b>
+                            {{ count }}
+                        </b>
+                    </div>
+                {% endfor %}
+            </div>
+            <details class="stock-alerts" open>
+                <summary>
+                    Alertas de agotados
+                </summary>
+                {% for item in dashboard.alerts %}
+                    <a href="{% url 'inventario_lotes' %}?variante={{ item.VarianteID }}">
+                        {{ item.Producto }}
+                        ·
+                        {{ item.SKU }}
+                        ↗
+                    </a>
+                {% empty %}
+                    <small>
+                        No hay variantes agotadas.
+                    </small>
+                {% endfor %}
+            </details>
+        </section>
+    {% endif %}
+</div>
+{% if dashboard.activity %}
+    <h2 class="activity-title">
+        Actividad reciente
+    </h2>
+    <section class="activity-grid">
+        {% for group in dashboard.activity %}
+            <article class="sheet">
+                <header>
+                    <h3>
+                        {{ group.label }}
+                    </h3>
+                    <a href="{{ group.url }}">
+                        Ver todo ↗
+                    </a>
+                </header>
+                {% for row in group.rows %}
+                    <a href="{{ row.url }}" class="activity-row">
+                        <i class="activity-symbol">
+                            {% include 'components/icon.html' with name=group.icon %}
+                        </i>
+                        <div>
+                            <strong>
+                                {{ row.Referencia }}
+                            </strong>
+                            <small>
+                                {{ row.Fecha|date:'d M · H:i' }}
+                            </small>
+                        </div>
+                        <span class="badge">
+                            {{ row.Estado }}
+                        </span>
+                        {% if row.Total != None %}
+                            <strong>
+                                Q
+                                {{ row.Total|floatformat:"2u" }}
+                            </strong>
+                        {% endif %}
+                    </a>
+                {% empty %}
+                    <p class="muted">
+                        Sin registros recientes.
+                    </p>
+                {% endfor %}
+            </article>
+        {% endfor %}
+    </section>
+{% endif %}
 </div>
 {% endblock %}
